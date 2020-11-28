@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+
+	<link rel="stylesheet" href="//get.mavo.io/mavo.css">
+
+	<title>Google Sheets Backend Demos</title>
+</head>
+
+<body>
+	<div mv-app="todoApp"
+			 mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
+			 mv-gs-key="AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4"
+			 mv-gs-sheet="Todos">
+
+		<h2>Todo List</h2>
+		<p mv-multiple="todo">
+			<label>
+				<input type="checkbox" property="done" />
+				<span property="taskTitle"></span>
+			</label>
+		</p>
+	</div>
+
+	<div mv-app
+			 mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
+			 mv-gs-key="AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4"
+			 mv-gs-sheet="In columns"
+			 mv-gs-range="1:2"
+			 mv-gs-data-in="columns"
+			 mv-gs-idify-headers>
+
+		<h2>Data in Columns</h2>
+		<p property mv-multiple>
+			<span property="id"></span>
+			<span property="value"></span>
+		</p>
+	</div>
+
+	<script src="//get.mavo.io/mavo.js"></script>
+	<script src="/mavo-gsheets.js"></script>
+</body>
+
+</html>
