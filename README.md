@@ -1,35 +1,24 @@
 # Google Sheets Backend
 
-## Prerequisites
-
-To use the features provided by this plugin, you need a Google account.
-
 ## Restrictions
 
-Only one collection. Property names inside the collection must correspond to headers in a spreadsheet, or the `mv-gs-idify-headers` attribute must present on the app root.
+Data must have headers:
 
-## Step 1: Turn on the Google Sheets API and Create API key
+- in the *first row of the specified range*, if data is organized in rows
+- otherwise, in the *first column*.
 
-Follow [Step 1 of this instruction](https://developers.google.com/sheets/api/quickstart/js): consequentially click the `Enable the Google Sheets API` and `Create API key` buttons.
+Only one collection. Property names inside the collection must correspond to headers in a spreadsheet, or the `transformHeaders` option must be provided in the `mv-gs-options` attribute.
 
-Use the provided **API key** as a value for `mv-gs-key`.
+## Setting Up
 
-**Note:** Keep **Client ID** in secret and don't include it in your app.
-
-## Step 2: Share a spreadsheet
-
-Use provided **URL** as a value for `mv-storage`/`mv-source`/`mv-init`.
+Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv-source`/`mv-init`.
 
 ## Supported Attributes
 
-| Attribute             | Description                                                                                                                                                                                               | Default Value        |
-|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
-| `mv-gs-key`           | **(Required)** The API key.                                                                                                                                                                               |                      |
-| `mv-gs-sheet`         | A sheet's title (which must be unique inside a spreadsheet).                                                                                                                                              | `Sheet1`             |
-| `mv-gs-range`         | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. For more information about A1 notation, see the description below.                                             |                      |
-| `mv-gs-data-in`       | Indicates how data is organized on the specified sheet: in `rows` or `columns`.                                                                                                                           | `rows`               |
-| `mv-gs-values`        | Determines whether values should be displayed according to the cell's formatting on the sheet (`formatted_values`) or not (`unformatted_values`).                                                         | `unformatted_values` |
-| `mv-gs-idify-headers` | If present, data headers will be converted to something that looks like the ids so that they could be used as property names. This is useful when headers contain spaces and/or other special characters. |                      |
+| Attribute     | Description                                                                                | Default Value |
+|---------------|--------------------------------------------------------------------------------------------|---------------|
+| `mv-gs-sheet` | A sheet title to read data from.                                                           | `Sheet1`      |
+| `mv-gs-range` | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |               |
 
 ## A1 notation for specifying cell ranges
 
@@ -44,3 +33,46 @@ This is a string like `A1:B2` that refers to a group of cells in the sheet and i
 If not specified, supposed all the cells in the sheet.
 
 Named ranges are also supported.
+
+## Customization
+
+The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-gs-options` attribute. To separating the options, you can use either commas or semicolons.
+
+### Supported options
+
+| Option             | Description                                                                                                                        |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `formattedValues`  | Determines whether values should be displayed according to the cell's formatting on the sheet (if this option is provided) or not. |
+| `dataInColumns`    | If provided, that indicates that data is organized on the specified sheet in columns.                                              |
+| `transformHeaders` | If provided, the plugin will convert headers to something that looks like the ids so that they could be used as property names.    |
+
+
+<h2>Demo</h2>
+
+```markup
+<div mv-app="todoApp" mv-plugins="gsheets"
+		mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
+		mv-gs-sheet="Todos">
+
+	<h2>Todo List</h2>
+	<p mv-multiple="todo">
+		<label>
+			<input type="checkbox" property="done" />
+			<span property="taskTitle"></span>
+		</label>
+	</p>
+</div>
+
+<div mv-app mv-plugins="gsheets"
+	 mv-source="https://docs.google.com/spreadsheets/d//14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
+	 mv-gs-sheet="In columns"
+	 mv-gs-range="1:2"
+	 mv-gs-options="dataInColumns, transformHeaders">
+
+	<h2>Data in Columns</h2>
+	<p property mv-multiple>
+		<span property="id"></span>
+		<span property="value"></span>
+	</p>
+</div>
+```
