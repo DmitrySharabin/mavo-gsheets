@@ -20,24 +20,30 @@
 			this.permissions.on(["read", "edit", "add", "delete", "save"]);
 
 			/**
-			 * @namespace
 			 * @property {string} apiKey — The API key. It's safe for embedding in URLs; it doesn't need any encoding.
 			 * @property {string} spreadsheet — The value between the "/d/" and the "/edit" in the URL of a spreadsheet.
 			 * @property {string} sheet — The title of the sheet with data. "Sheet1" by default.
 			 * @property {string} range — A range with data in A1 notation. If not specified, supposed all the cells in the sheet.
-			 * @property {string} dimension — Indicates how data is organized on the specified sheet: in `rows` (by default) or `columns`.
-			 * @property {string} render — Determines whether values should be displayed according to the cell's formatting on the sheet (`formatted_values`) or not (`unformatted_values`).
-			 * @property (boolean) idify — If true, convert headers to something that looks like the ids so that they could be used as property names.
 			 */
 			const config = {
-				apiKey: mavo.element.getAttribute("mv-gs-key"),
+				apiKey: mavo.element.getAttribute("mv-gs-key") || "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4",
 				spreadsheet: this.url.pathname.slice(1).split("/")[2] || "",
 				sheet: mavo.element.getAttribute("mv-gs-sheet") || "Sheet1",
-				range: mavo.element.getAttribute("mv-gs-range") || "",
-				dimension: mavo.element.getAttribute("mv-gs-data-in") || "rows",
-				render: `${mavo.element.getAttribute("mv-gs-values") || "unformatted"}_value`,
-				idify: mavo.element.hasAttribute("mv-gs-idify-headers")
+				range: mavo.element.getAttribute("mv-gs-range") || ""
 			};
+
+			/**
+			 * Supported options
+			 *
+			 * formattedValues — Determines whether values should be displayed according to the cell's formatting on the sheet (if true) or not (if false).
+			 * dataInColumns — If true, indicates that data is organized on the specified sheet in columns.
+			 * transformHeaders — If true, convert headers to something that looks like the ids so that they could be used as property names.
+			 */
+			const options = mavo.element.getAttribute("mv-gs-options");
+
+			if (options) {
+				Object.assign(config, Mavo.options(options));
+			}
 
 			$.extend(this, config);
 
@@ -53,8 +59,16 @@
 		 */
 		async get() {
 			const url = this.apiURL;
-			url.searchParams.set("valueRenderOption", this.render);
-			url.searchParams.set("majorDimension", this.dimension);
+
+			if (this.dataInColumns) {
+				url.searchParams.set("majorDimension", "columns");
+			}
+
+			if (this.formattedValues) {
+				url.searchParams.set("valueRenderOption", "formatted_value");
+			} else {
+				url.searchParams.set("valueRenderOption", "unformatted_value");
+			}
 
 			try {
 				const response = await fetch(url.href);
@@ -65,7 +79,7 @@
 
 				const properties = [];
 				for (let header of headers) {
-					if (this.idify) {
+					if (this.transformHeaders) {
 						// Fix headers so we can use them as property names.
 						header = Mavo.Functions.idify(header);
 					}
