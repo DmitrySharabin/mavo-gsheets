@@ -26,10 +26,10 @@
 			 * @property {string} range — A range with data in A1 notation. If not specified, supposed all the cells in the sheet.
 			 */
 			const config = {
-				apiKey: mavo.element.getAttribute("mv-gsheets-key") || "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4",
-				spreadsheet: this.url.pathname.slice(1).split("/")[2] || "",
-				sheet: mavo.element.getAttribute("mv-gsheets-sheet") || "Sheet1",
-				range: mavo.element.getAttribute("mv-gsheets-range") || ""
+				apiKey: mavo.element.getAttribute("mv-gsheets-key") ?? "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4",
+				spreadsheet: this.url.pathname.slice(1).split("/")[2] ?? "",
+				sheet: mavo.element.getAttribute("mv-gsheets-sheet") ?? "Sheet1",
+				range: mavo.element.getAttribute("mv-gsheets-range") ?? ""
 			};
 
 			/**
