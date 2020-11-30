@@ -7,7 +7,7 @@ Data must have headers:
 - in the *first row of the specified range*, if data is organized in rows
 - otherwise, in the *first column*.
 
-Only one collection. Property names inside the collection must correspond to headers in a spreadsheet, or the `transformHeaders` option must be provided in the `mv-gs-options` attribute.
+Only one collection. Property names inside the collection must correspond to headers in a spreadsheet, or the `transformHeaders` option must be provided in the `mv-gsheets-options` attribute.
 
 ## Setting Up
 
@@ -17,8 +17,8 @@ Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv
 
 | Attribute     | Description                                                                                | Default Value |
 |---------------|--------------------------------------------------------------------------------------------|---------------|
-| `mv-gs-sheet` | A sheet title to read data from.                                                           | `Sheet1`      |
-| `mv-gs-range` | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |               |
+| `mv-gsheets-sheet` | A sheet title to read data from.                                                           | `Sheet1`      |
+| `mv-gsheets-range` | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |               |
 
 ## A1 notation for specifying cell ranges
 
@@ -36,7 +36,7 @@ Named ranges are also supported.
 
 ## Customization
 
-The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-gs-options` attribute. To separating the options, you can use either commas or semicolons.
+The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-gsheets-options` attribute. To separating the options, you can use either commas or semicolons.
 
 ### Supported options
 
@@ -52,7 +52,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 ```markup
 <div mv-app="todoApp" mv-plugins="gsheets"
 		mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
-		mv-gs-sheet="Todos">
+		mv-gsheets-sheet="Todos">
 
 	<h2>Todo List</h2>
 	<p mv-multiple="todo">
@@ -65,9 +65,9 @@ The plugin supports a number of options for customizing the way it reads/writes 
 
 <div mv-app mv-plugins="gsheets"
 	 mv-source="https://docs.google.com/spreadsheets/d//14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
-	 mv-gs-sheet="In columns"
-	 mv-gs-range="1:2"
-	 mv-gs-options="dataInColumns, transformHeaders">
+	 mv-gsheets-sheet="In columns"
+	 mv-gsheets-range="1:2"
+	 mv-gsheets-options="dataInColumns, transformHeaders">
 
 	<h2>Data in Columns</h2>
 	<p property mv-multiple>

@@ -14,7 +14,7 @@
 	const _ = Mavo.Backend.register($.Class({
 		extends: Mavo.Backend,
 
-		id: "GoogleSheets",
+		id: "GSheets",
 
 		constructor(url, { mavo, format }) {
 			this.permissions.on(["read", "edit", "add", "delete", "save"]);
@@ -26,10 +26,10 @@
 			 * @property {string} range — A range with data in A1 notation. If not specified, supposed all the cells in the sheet.
 			 */
 			const config = {
-				apiKey: mavo.element.getAttribute("mv-gs-key") || "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4",
+				apiKey: mavo.element.getAttribute("mv-gsheets-key") || "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4",
 				spreadsheet: this.url.pathname.slice(1).split("/")[2] || "",
-				sheet: mavo.element.getAttribute("mv-gs-sheet") || "Sheet1",
-				range: mavo.element.getAttribute("mv-gs-range") || ""
+				sheet: mavo.element.getAttribute("mv-gsheets-sheet") || "Sheet1",
+				range: mavo.element.getAttribute("mv-gsheets-range") || ""
 			};
 
 			/**
@@ -39,7 +39,7 @@
 			 * dataInColumns — If true, indicates that data is organized on the specified sheet in columns.
 			 * transformHeaders — If true, convert headers to something that looks like the ids so that they could be used as property names.
 			 */
-			const options = mavo.element.getAttribute("mv-gs-options");
+			const options = mavo.element.getAttribute("mv-gsheets-options");
 
 			if (options) {
 				Object.assign(config, Mavo.options(options));
