@@ -93,9 +93,7 @@
 					ret.push(_.zipObject(properties, piece));
 				}
 
-				const property = this.mavo.root.getNames("Collection")[0] || "content";
-
-				return { [property]: ret };
+				return ret;
 			}
 			catch (e) {
 				return null;
