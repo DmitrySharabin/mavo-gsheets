@@ -64,7 +64,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 </div>
 
 <div mv-app mv-plugins="gsheets"
-	 mv-source="https://docs.google.com/spreadsheets/d//14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
+	 mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
 	 mv-gsheets-range="1:2"
 	 mv-gsheets-options="dataInColumns, transformHeaders">
 
