@@ -84,25 +84,15 @@
 				const json = await response.json();
 				const values = json.values;
 
-				const [headers, ...data] = values;
+				let [headers, ...data] = values;
 
-				const properties = [];
-				for (let header of headers) {
-					if (this.transformHeaders) {
-						// Fix headers so we can use them as property names.
-						header = Mavo.Functions.idify(header);
-					}
+				// If needed, fix headers so we can use them as property names.
+				headers = headers.map(header => this.transformHeaders ? Mavo.Functions.idify(header) : header);
 
-					properties.push(header);
-				}
+				// Assign data to corresponding properties.
+				data = data.map(d => _.zipObject(headers, d));
 
-				const ret = [];
-
-				for (const piece of data) {
-					ret.push(_.zipObject(properties, piece));
-				}
-
-				return ret;
+				return data;
 			}
 			catch (e) {
 				return null;
