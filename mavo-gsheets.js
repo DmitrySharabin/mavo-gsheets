@@ -20,16 +20,16 @@
 			this.permissions.on(["read", "edit", "add", "delete", "save"]);
 
 			/**
-			 * @property {string} apiKey — The API key. It's safe for embedding in URLs; it doesn't need any encoding.
+			 * @property {string} apiKey — The API key for unauthenticated GET requests. It's safe for embedding in URLs; it doesn't need any encoding.
 			 * @property {string} spreadsheet — The value between the "/d/" and the "/edit" in the URL of a spreadsheet.
-			 * @property {string} sheet — The title of the sheet with data. "Sheet1" by default.
+			 * @property {string} sheet — The title of the sheet with data. If not provided, the first visible sheet will be used by default.
 			 * @property {string} range — A range with data in A1 notation. If not specified, supposed all the cells in the sheet.
 			 */
 			const config = {
 				apiKey: mavo.element.getAttribute("mv-gsheets-key") ?? "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4",
-				spreadsheet: this.url.pathname.slice(1).split("/")[2] ?? "",
-				sheet: mavo.element.getAttribute("mv-gsheets-sheet") ?? "Sheet1",
-				range: mavo.element.getAttribute("mv-gsheets-range") ?? ""
+				spreadsheet: this.url.pathname.slice(1).split("/")[2],
+				sheet: mavo.element.getAttribute("mv-gsheets-sheet"),
+				range: mavo.element.getAttribute("mv-gsheets-range")
 			};
 
 			/**
@@ -47,7 +47,16 @@
 
 			$.extend(this, config);
 
-			this.apiURL = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${this.spreadsheet}/values/'${this.sheet}'${this.range ? `!${this.range}` : ""}`);
+			/**
+			 * Since sheet title and cells range are optional, we need to cover all the possible cases:
+			 *
+			 * - 'Sheet title'!Range
+			 * – 'Sheet title'
+			 * – Range
+			 */
+			const sheetAndRange = `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
+
+			this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${sheetAndRange}`);
 			this.apiURL.searchParams.set("key", this.apiKey);
 		},
 
@@ -137,6 +146,7 @@
 		},
 
 		static: {
+			apiDomain: "https://sheets.googleapis.com/v4/spreadsheets",
 			/**
 			 * Determines whether the Google Sheets backend is used.
 			 * @param {string} value The mv-storage/mv-source/mv-init value.

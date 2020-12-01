@@ -15,10 +15,10 @@ Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv
 
 ## Supported Attributes
 
-| Attribute     | Description                                                                                | Default Value |
-|---------------|--------------------------------------------------------------------------------------------|---------------|
-| `mv-gsheets-sheet` | A sheet title to read data from.                                                           | `Sheet1`      |
-| `mv-gsheets-range` | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |               |
+| Attribute          | Description                                                                                |
+|--------------------|--------------------------------------------------------------------------------------------|
+| `mv-gsheets-sheet` | A sheet title to read data from. If not provided, the first visible sheet will be used.    |
+| `mv-gsheets-range` | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |
 
 ## A1 notation for specifying cell ranges
 
@@ -65,7 +65,6 @@ The plugin supports a number of options for customizing the way it reads/writes 
 
 <div mv-app mv-plugins="gsheets"
 	 mv-source="https://docs.google.com/spreadsheets/d//14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
-	 mv-gsheets-sheet="In columns"
 	 mv-gsheets-range="1:2"
 	 mv-gsheets-options="dataInColumns, transformHeaders">
 
