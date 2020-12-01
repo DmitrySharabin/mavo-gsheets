@@ -87,7 +87,9 @@
 				let [headers, ...data] = values;
 
 				// If needed, fix headers so we can use them as property names.
-				headers = headers.map(header => this.transformHeaders ? Mavo.Functions.idify(header) : header);
+				if (this.transformHeaders) {
+					headers = headers.map(header => Mavo.Functions.idify(header));
+				}
 
 				// Assign data to corresponding properties.
 				data = data.map(d => _.zipObject(headers, d));
