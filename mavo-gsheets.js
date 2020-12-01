@@ -54,10 +54,14 @@
 			 * – 'Sheet title'
 			 * – Range
 			 */
-			const sheetAndRange = `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
+			this.sheetAndRange = `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
 
-			this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${sheetAndRange}`);
+			this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${this.sheetAndRange}`);
 			this.apiURL.searchParams.set("key", this.apiKey);
+
+			// Since we need an access token to write data back to a spreadsheet,
+			// let's check whether we already have one.
+			this.oAuthenticate(true);
 		},
 
 		/**
@@ -67,7 +71,7 @@
 		 * that's why we need to implement this method.
 		 */
 		async get() {
-			const url = this.apiURL;
+			const url = new URL(this.apiURL);
 
 			if (this.dataInColumns) {
 				url.searchParams.set("majorDimension", "columns");
@@ -108,37 +112,40 @@
 		 * @param {object} o Arbitrary options.
 		 */
 		async put(serialized, path = this.path, o = {}) {
-			const data = JSON.parse(serialized);
+			// WARNING! If app has more than one collection, this code fails.
+			let data = JSON.parse(serialized);
 
-			const property = this.mavo.root.getNames("Collection")[0] || "content";
+			// Transform data so that Google Sheets API could handle it.
+			const headers = Object.keys(data[0]);
 
-			const [headers, ...values] = data[property];
-
-			const ret = [Object.keys(headers)];
-			for (const val of values) {
-				ret.push(Object.values(val));
-			}
+			data = data.map(d => Object.values(d));
+			data = [headers, ...data];
 
 			try {
-				const url = this.apiURL;
+				const url = new URL(this.apiURL);
+				url.searchParams.set("valueInputOption", "RAW");
 
-				// TODO: Add authentication.
-				await fetch(url.href, {
-					method: "PUT",
-					body:
-					{
-						range: this.range,
-						majorDimension: this.dimension,
-						values: ret
-					}
-				});
+				if (!this.isAuthenticated()) {
+					await this.oAuthenticate();
+				}
+
+				return this.request(url, {
+					"range": this.sheetAndRange,
+					"majorDimension": this.dataInColumns ? "COLUMNS" : "ROWS",
+					"values": data
+				}, "PUT");
 			} catch (e) {
 				return null;
 			}
 		},
 
+		oAuthParams: () => "&redirect_uri=https://auth.mavo.io&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets",
+
 		static: {
 			apiDomain: "https://sheets.googleapis.com/v4/spreadsheets",
+			oAuth: "https://accounts.google.com/o/oauth2/auth",
+			key: "380712995757-4e9augrln1ck0soj8qgou0b4tnr30o42.apps.googleusercontent.com", // Client ID for PUT requests
+
 			/**
 			 * Determines whether the Google Sheets backend is used.
 			 * @param {string} value The mv-storage/mv-source/mv-init value.
