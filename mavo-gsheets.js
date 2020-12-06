@@ -21,7 +21,7 @@
 
 			/**
 			 * @property {string} apiKey — The API key for unauthenticated GET requests. It's safe for embedding in URLs; it doesn't need any encoding.
-			 * @property {string} spreadsheet — The value between the "/d/" and the "/edit" in the URL of a spreadsheet.
+			 * @property {string} spreadsheet — A spreadsheet id. The value between the "/d/" and the "/edit" in the URL of a spreadsheet.
 			 * @property {string} sheet — The title of the sheet with data. If not provided, the first visible sheet will be used by default.
 			 * @property {string} range — A range with data in A1 notation. If not specified, supposed all the cells in the sheet.
 			 */
