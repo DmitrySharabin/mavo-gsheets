@@ -20,6 +20,7 @@ Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv
 | `mv-gsheets-sheet` | A sheet title to read data from. If not provided, the first visible sheet will be used.    |
 | `mv-gsheets-range` | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |
 
+**Note:** We recommend providing either *sheet title* or *range* to avoid extra network requests.
 ## A1 notation for specifying cell ranges
 
 This is a string like `A1:B2` that refers to a group of cells in the sheet and is typically used in formulas. For example, valid ranges are:

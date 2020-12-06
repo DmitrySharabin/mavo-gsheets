@@ -71,6 +71,26 @@
 		 * that's why we need to implement this method.
 		 */
 		async get() {
+			// If neither sheet title nor range is provided, we should use some default range to get data from.
+			// Otherwise, the fetch request will fail, and we don't want it.
+			// Let's use all cells of the first visible sheet by default. To do that, we need to provide its title.
+			if (this.sheetAndRange === "") {
+				const url = new URL(`${_.apiDomain}/${this.spreadsheet}`);
+				url.searchParams.set("key", this.apiKey);
+
+				const response = await fetch(url.href);
+				const spreadsheet = await response.json();
+
+				const visibleSheet = spreadsheet.sheets.find(sheet => !sheet.properties.hidden);
+
+				// Wrap the sheet title into single quotes since it might have spaces in it.
+				this.sheetAndRange = `'${visibleSheet.properties.title}'`;
+
+				// Rebuild apiURL using the new range.
+				this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${this.sheetAndRange}`);
+				this.apiURL.searchParams.set("key", this.apiKey);
+			}
+
 			const url = new URL(this.apiURL);
 
 			if (this.dataInColumns) {
