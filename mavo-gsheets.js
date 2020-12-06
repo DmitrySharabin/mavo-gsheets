@@ -90,6 +90,17 @@
 
 				let [headers, ...data] = values;
 
+				if (headers.some(h => !h.trim().length)) {
+					// Not all data has headers. Warn an author.
+					Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headers"));
+
+					// What if there are more than one data set and an author didn't provide a data range?
+					// Let them know about that.
+					if (!this.range) {
+						Mavo.warn(this.mavo._("mv-gsheets-range-not-provided"));
+					}
+				}
+
 				// If needed, fix headers so we can use them as property names.
 				if (this.transformHeaders) {
 					headers = headers.map(header => Mavo.Functions.idify(header));
@@ -167,9 +178,19 @@
 			 */
 			zipObject: function (props, values) {
 				return props.reduce((prev, prop, i) => {
+					// Skip empty property names (and corresponding data) since they are useless.
+					if (!prop.trim().length) {
+						return prev;
+					}
+
 					return Object.assign(prev, { [prop]: values[i] });
 				}, {});
 			}
 		}
 	}));
+
+	Mavo.Locale.register("en", {
+		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
+		"mv-gsheets-empty-cells-in-headers": "It looks like not all your data has headers. Please, make sure that the row/column with headers hasn't got empty cells."
+	});
 })(Bliss)
