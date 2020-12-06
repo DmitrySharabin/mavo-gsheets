@@ -47,6 +47,12 @@ The plugin supports a number of options for customizing the way it reads/writes 
 | `dataInColumns`    | If provided, that indicates that data is organized on the specified sheet in columns.                                              |
 | `transformHeaders` | If provided, the plugin will convert headers to something that looks like the ids so that they could be used as property names.    |
 
+### Localization strings
+
+| id                                  | Value                                                                                                                                             |
+|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mv-gsheets-range-not-provided`     | If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs. |
+| `mv-gsheets-empty-cells-in-headers` | It looks like not all your data has headers. Please, make sure that the row/column with headers hasn't got empty cells.                           |
 
 <h2>Demo</h2>
 
