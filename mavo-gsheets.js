@@ -182,7 +182,7 @@
 			 * @param {string} value The mv-storage/mv-source/mv-init value.
 			 */
 			test: function (value) {
-				return /^https:\/\/docs.google.com\/spreadsheets\/.*/.test(value);
+				return /^https:\/\/docs.google.com\/spreadsheets\/?.*/.test(value);
 			},
 
 			/**
