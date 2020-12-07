@@ -158,11 +158,21 @@
 					await this.oAuthenticate();
 				}
 
-				return this.request(url, {
+				const body = {
 					"range": this.sheetAndRange,
 					"majorDimension": this.dataInColumns ? "COLUMNS" : "ROWS",
 					"values": data
-				}, "PUT");
+				};
+
+				return this.request(url, body, "PUT").catch(async e => {
+					if (e.status === 401) {
+						// If the OAuth access token has expired, remove it, re-authenticate a user, and repeat the request.
+						this.accessToken = null;
+						await this.oAuthenticate();
+
+						return this.request(url, body, "PUT");
+					}
+				});
 			} catch (e) {
 				return null;
 			}
