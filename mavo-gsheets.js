@@ -135,6 +135,10 @@
 			data = [headers, ...data];
 
 			try {
+				if (this.sheetAndRange === "") {
+					await this.findSheet();
+				}
+
 				const url = new URL(this.apiURL);
 				url.searchParams.set("valueInputOption", "RAW");
 
