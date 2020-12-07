@@ -43,7 +43,7 @@
 			 *
 			 * formattedValues — Determines whether values should be displayed according to the cell's formatting on the sheet (if true) or not (if false).
 			 * dataInColumns — If true, indicates that data is organized on the specified sheet in columns.
-			 * transformHeaders — If true, convert headers to something that looks like the ids so that they could be used as property names.
+			 * transformHeadings — If true, convert headings to something that looks like the ids so that they could be used as property names.
 			 */
 			if (o.options) {
 				Object.assign(this, Mavo.options(o.options));
@@ -90,11 +90,11 @@
 				const json = await response.json();
 				const values = json.values;
 
-				let [headers, ...data] = values;
+				let [headings, ...data] = values;
 
-				if (headers.some(h => !h.trim().length)) {
-					// Not all data has headers. Warn an author.
-					Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headers"));
+				if (headings.some(h => !h.trim().length)) {
+					// Not all data has headings. Warn an author.
+					Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headings"));
 
 					// What if there are more than one data set and an author didn't provide a data range?
 					// Let them know about that.
@@ -103,13 +103,13 @@
 					}
 				}
 
-				// If needed, fix headers so we can use them as property names.
-				if (this.transformHeaders) {
-					headers = headers.map(header => Mavo.Functions.idify(header));
+				// If needed, fix headings so we can use them as property names.
+				if (this.transformHeadings) {
+					headings = headings.map(heading => Mavo.Functions.idify(heading));
 				}
 
 				// Assign data to corresponding properties.
-				data = data.map(d => _.zipObject(headers, d));
+				data = data.map(d => _.zipObject(headings, d));
 
 				return data;
 			}
@@ -129,10 +129,10 @@
 			let data = JSON.parse(serialized);
 
 			// Transform data so that Google Sheets API could handle it.
-			const headers = Object.keys(data[0]);
+			const headings = Object.keys(data[0]);
 
 			data = data.map(d => Object.values(d));
-			data = [headers, ...data];
+			data = [headings, ...data];
 
 			try {
 				if (this.sheetAndRange === "") {
@@ -234,7 +234,7 @@
 
 	Mavo.Locale.register("en", {
 		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
-		"mv-gsheets-empty-cells-in-headers": "It looks like not all your data has headers. Please, make sure that the row/column with headers hasn't got empty cells.",
+		"mv-gsheets-empty-cells-in-headings": "It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.",
 		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet."
 	});
 })(Bliss)

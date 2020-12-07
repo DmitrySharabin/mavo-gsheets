@@ -2,12 +2,12 @@
 
 ## Restrictions
 
-Data must have headers:
+Data must have headings:
 
 - in the *first row of the specified range*, if data is organized in rows
 - otherwise, in the *first column*.
 
-Only one collection. Property names inside the collection must correspond to headers in a spreadsheet, or the `transformHeaders` option must be provided in the `mv-storage-options` (`mv-source-options`, `mv-init-options`) attribute.
+Only one collection. Property names inside the collection must correspond to headings in a spreadsheet, or the `transformHeadings` option must be provided in the `mv-storage-options` (`mv-source-options`, `mv-init-options`) attribute.
 
 ## Setting Up
 
@@ -46,14 +46,14 @@ The plugin supports a number of options for customizing the way it reads/writes 
 |--------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | `formattedValues`  | Determines whether values should be displayed according to the cell's formatting on the sheet (if this option is provided) or not. |
 | `dataInColumns`    | If provided, that indicates that data is organized on the specified sheet in columns.                                              |
-| `transformHeaders` | If provided, the plugin will convert headers to something that looks like the ids so that they could be used as property names.    |
+| `transformHeadings` | If provided, the plugin will convert headings to something that looks like the ids so that they could be used as property names.    |
 
 ### Localization strings
 
 | id                                  | Value                                                                                                                                             |
 |-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
 | `mv-gsheets-range-not-provided`     | If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs. |
-| `mv-gsheets-empty-cells-in-headers` | It looks like not all your data has headers. Please, make sure that the row/column with headers hasn't got empty cells.                           |
+| `mv-gsheets-empty-cells-in-headings` | It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.                           |
 
 <h2>Demo</h2>
 
@@ -75,7 +75,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 		mv-source="https://docs.google.com/spreadsheets/"
 		mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g"
 		mv-source-range="1:2"
-		mv-source-options="dataInColumns, transformHeaders">
+		mv-source-options="dataInColumns, transformHeadings">
 
 	<h2>Data in Columns</h2>
 	<p property mv-multiple>
