@@ -160,6 +160,11 @@
 
 						return this.request(url, body, "PUT");
 					}
+
+					if (e.status === 403) {
+						// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
+						this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
+					}
 				});
 			} catch (e) {
 				return null;
@@ -229,6 +234,7 @@
 
 	Mavo.Locale.register("en", {
 		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
-		"mv-gsheets-empty-cells-in-headers": "It looks like not all your data has headers. Please, make sure that the row/column with headers hasn't got empty cells."
+		"mv-gsheets-empty-cells-in-headers": "It looks like not all your data has headers. Please, make sure that the row/column with headers hasn't got empty cells.",
+		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet."
 	});
 })(Bliss)
