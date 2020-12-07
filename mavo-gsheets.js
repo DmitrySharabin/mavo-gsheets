@@ -16,36 +16,38 @@
 
 		id: "GSheets",
 
-		constructor(url, { mavo, key, spreadsheet, sheet, range, options }) {
+		constructor() {
 			this.permissions.on(["read", "edit", "add", "delete", "save"]);
 
+			// Since we need an access token to write data back to a spreadsheet,
+			// let's check whether we already have one.
+			this.oAuthenticate(true);
+		},
+
+		update(url, o) {
+			this.super.update.call(this, url, o);
+
 			/**
-			 * @property {string} apiKey — The API key for unauthenticated GET requests. It's safe for embedding in URLs; it doesn't need any encoding.
+			 * @property {string} apikey — The API key for unauthenticated GET requests. It's safe for embedding in URLs; it doesn't need any encoding.
 			 * @property {string} spreadsheet — A spreadsheet id. The value between the "/d/" and the "/edit" in the URL of a spreadsheet.
 			 * @property {string} sheet — The title of the sheet with data. If not provided, the first visible sheet will be used by default.
 			 * @property {string} range — A range with data in A1 notation. If not specified, supposed all the cells in the sheet.
 			 */
-			const config = {
-				apiKey: key ?? mavo.element.getAttribute("mv-gsheets-key") ?? "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4",
-				spreadsheet: spreadsheet ?? this.url.pathname.slice(1).split("/")[2],
-				sheet: sheet ?? mavo.element.getAttribute("mv-gsheets-sheet"),
-				range: range ?? mavo.element.getAttribute("mv-gsheets-range")
-			};
+			this.apikey = o.apikey ?? "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4";
+			this.spreadsheet = o.spreadsheet ?? this.url.pathname.slice(1).split("/")[2];
+			this.sheet = o.sheet;
+			this.range = o.range;
 
 			/**
-			 * Supported options
+			 * Supported backend-specific options:
 			 *
 			 * formattedValues — Determines whether values should be displayed according to the cell's formatting on the sheet (if true) or not (if false).
 			 * dataInColumns — If true, indicates that data is organized on the specified sheet in columns.
 			 * transformHeaders — If true, convert headers to something that looks like the ids so that they could be used as property names.
 			 */
-			const o = options ?? mavo.element.getAttribute("mv-gsheets-options");
-
-			if (o) {
-				Object.assign(config, Mavo.options(o));
+			if (o.options) {
+				Object.assign(this, Mavo.options(o.options));
 			}
-
-			$.extend(this, config);
 
 			/**
 			 * Since sheet title and cells range are optional, we need to cover all the possible cases:
@@ -57,11 +59,7 @@
 			this.sheetAndRange = `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
 
 			this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${this.sheetAndRange}`);
-			this.apiURL.searchParams.set("key", this.apiKey);
-
-			// Since we need an access token to write data back to a spreadsheet,
-			// let's check whether we already have one.
-			this.oAuthenticate(true);
+			this.apiURL.searchParams.set("key", this.apikey);
 		},
 
 		/**
@@ -76,7 +74,7 @@
 			// Let's use all cells of the first visible sheet by default. To do that, we need to provide its title.
 			if (this.sheetAndRange === "") {
 				const url = new URL(`${_.apiDomain}/${this.spreadsheet}`);
-				url.searchParams.set("key", this.apiKey);
+				url.searchParams.set("key", this.apikey);
 
 				const response = await fetch(url.href);
 				const spreadsheet = await response.json();
@@ -88,7 +86,7 @@
 
 				// Rebuild apiURL using the new range.
 				this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${this.sheetAndRange}`);
-				this.apiURL.searchParams.set("key", this.apiKey);
+				this.apiURL.searchParams.set("key", this.apikey);
 			}
 
 			const url = new URL(this.apiURL);

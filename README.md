@@ -7,18 +7,19 @@ Data must have headers:
 - in the *first row of the specified range*, if data is organized in rows
 - otherwise, in the *first column*.
 
-Only one collection. Property names inside the collection must correspond to headers in a spreadsheet, or the `transformHeaders` option must be provided in the `mv-gsheets-options` attribute.
+Only one collection. Property names inside the collection must correspond to headers in a spreadsheet, or the `transformHeaders` option must be provided in the `mv-storage-options` (`mv-source-options`, `mv-init-options`) attribute.
 
 ## Setting Up
 
-Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv-source`/`mv-init`.
+Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv-source`/`mv-init` and specify additional parameters via the `mv-storage-*`/`mv-source-*`/`mv-init-*` family of attributes if needed.
 
-## Supported Attributes
+## Supported values of the `mv-storage-*` (`mv-source-*`, `mv-init-*`) family of attributes
 
-| Attribute          | Description                                                                                |
-|--------------------|--------------------------------------------------------------------------------------------|
-| `mv-gsheets-sheet` | A sheet title to read data from. If not provided, the first visible sheet will be used.    |
-| `mv-gsheets-range` | A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |
+| Value         | Description                                                                                             |
+|---------------|---------------------------------------------------------------------------------------------------------|
+| `sheet`       | (*Optional*) A sheet title to read data from. If not provided, the first visible sheet will be used.    |
+| `range`       | (*Optional*) A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |
+| `spreadsheet` | (*Optional*) A spreadsheet id. The value between the `/d/` and the `/edit` in the URL of a spreadsheet. By specifying this value, you can redefine the spreadsheet id the plugin got from the provided spreadsheet URL. In other words, you'll be able to work with another spreadsheet. |
 
 **Note:** We recommend providing either *sheet title* or *range* to avoid extra network requests.
 ## A1 notation for specifying cell ranges
@@ -37,7 +38,7 @@ Named ranges are also supported.
 
 ## Customization
 
-The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-gsheets-options` attribute. To separating the options, you can use either commas or semicolons.
+The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-storage-options` (`mv-source-options`, `mv-init-options`) attribute. To separating the options, you can use either commas or semicolons.
 
 ### Supported options
 
@@ -57,9 +58,9 @@ The plugin supports a number of options for customizing the way it reads/writes 
 <h2>Demo</h2>
 
 ```markup
-<div mv-app="todoApp" mv-plugins="gsheets"
-		mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
-		mv-gsheets-sheet="Todos">
+<div mv-app="todoApp"
+		mv-storage="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
+		mv-storage-sheet="Todos">
 
 	<h2>Todo List</h2>
 	<p mv-multiple="todo">
@@ -70,10 +71,11 @@ The plugin supports a number of options for customizing the way it reads/writes 
 	</p>
 </div>
 
-<div mv-app mv-plugins="gsheets"
-	 mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
-	 mv-gsheets-range="1:2"
-	 mv-gsheets-options="dataInColumns, transformHeaders">
+<div mv-app
+		mv-source="https://docs.google.com/spreadsheets/"
+		mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g"
+		mv-source-range="1:2"
+		mv-source-options="dataInColumns, transformHeaders">
 
 	<h2>Data in Columns</h2>
 	<p property mv-multiple>
