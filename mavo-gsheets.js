@@ -68,17 +68,39 @@
 		 * that's why we need to implement this method.
 		 */
 		async get() {
-			if (this.sheetAndRange === "") {
-				await this.findSheet();
-			}
-
-			const url = _.buildURL(this.apiURL, {
-				"majorDimension": this.dataInColumns ? "columns" : "rows",
-				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
-			});
-
 			try {
-				const response = await fetch(url.href);
+				if (this.sheetAndRange === "") {
+					await this.findSheet();
+				}
+
+				const url = _.buildURL(this.apiURL, {
+					"majorDimension": this.dataInColumns ? "columns" : "rows",
+					"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
+				});
+
+				let response;
+
+				if (this.isAuthenticated()) {
+					response = await fetch(url.href, {
+						headers: {
+							Authorization: `Bearer ${this.accessToken}`
+						},
+					});
+				}
+				else {
+					response = await fetch(url.href);
+				}
+
+				// The request failed? It doesn't make sense to proceed.
+				if (response.status !== 200) {
+					if (response.status === 403) {
+						// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
+						Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
+					}
+
+					return null;
+				}
+
 				const json = await response.json();
 				const values = json.values;
 
@@ -106,6 +128,14 @@
 				return data;
 			}
 			catch (e) {
+				if (e.status === 403) {
+					// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
+					Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
+				}
+				else {
+					Mavo.warn(e.response.error.message);
+				}
+
 				return null;
 			}
 		},
@@ -201,8 +231,24 @@
 		 */
 		async findSheet() {
 			const url = _.buildURL(this.spreadsheet, { key: this.apikey });
+			let response;
 
-			const response = await fetch(url.href);
+			if (this.isAuthenticated()) {
+				response = await fetch(url.href, {
+					headers: {
+						Authorization: `Bearer ${this.accessToken}`
+					},
+				});
+			}
+			else {
+				response = await fetch(url.href);
+			}
+
+			// The request failed? It doesn't make sense to proceed.
+			if (response.status !== 200) {
+				return Promise.reject(response);
+			}
+
 			const spreadsheet = await response.json();
 
 			const visibleSheet = spreadsheet?.sheets?.find(sheet => !sheet.properties.hidden);
@@ -271,6 +317,7 @@
 	Mavo.Locale.register("en", {
 		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
 		"mv-gsheets-empty-cells-in-headings": "It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.",
-		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet."
+		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet.",
+		"mv-gsheets-read-permission-denied": "You don't have permission to read data from the spreadsheet."
 	});
 })(Bliss)
