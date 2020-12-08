@@ -202,10 +202,10 @@
 			const response = await fetch(url.href);
 			const spreadsheet = await response.json();
 
-			const visibleSheet = spreadsheet.sheets.find(sheet => !sheet.properties.hidden);
+			const visibleSheet = spreadsheet?.sheets?.find(sheet => !sheet.properties.hidden);
 
 			// Wrap the sheet title into single quotes since it might have spaces in it.
-			this.sheetAndRange = `'${visibleSheet.properties.title}'`;
+			this.sheetAndRange = `'${visibleSheet?.properties?.title}'`;
 
 			// Rebuild apiURL using the new range.
 			this.apiURL = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
