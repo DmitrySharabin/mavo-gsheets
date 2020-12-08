@@ -253,13 +253,13 @@
 			 * @param {object} params Query parameters.
 			 */
 			buildURL(url, params = {}) {
-				url = new URL(url, _.apiDomain);
+				const ret = new URL(url, _.apiDomain);
 
 				for (const p in params) {
-					url.searchParams.set(p, params[p]);
+					ret.searchParams.set(p, params[p]);
 				}
 
-				return url;
+				return ret;
 			}
 		}
 	}));
