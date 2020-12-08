@@ -58,8 +58,7 @@
 			 */
 			this.sheetAndRange = `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
 
-			this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${this.sheetAndRange}`);
-			this.apiURL.searchParams.set("key", this.apikey);
+			this.apiURL = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
 		},
 
 		/**
@@ -73,17 +72,10 @@
 				await this.findSheet();
 			}
 
-			const url = new URL(this.apiURL);
-
-			if (this.dataInColumns) {
-				url.searchParams.set("majorDimension", "columns");
-			}
-
-			if (this.formattedValues) {
-				url.searchParams.set("valueRenderOption", "formatted_value");
-			} else {
-				url.searchParams.set("valueRenderOption", "unformatted_value");
-			}
+			const url = _.buildURL(this.apiURL, {
+				"majorDimension": this.dataInColumns ? "columns" : "rows",
+				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
+			});
 
 			try {
 				const response = await fetch(url.href);
@@ -139,12 +131,11 @@
 					await this.findSheet();
 				}
 
-				const url = new URL(this.apiURL);
-				url.searchParams.set("valueInputOption", "RAW");
+				const url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
 
 				const body = {
 					"range": this.sheetAndRange,
-					"majorDimension": this.dataInColumns ? "COLUMNS" : "ROWS",
+					"majorDimension": this.dataInColumns ? "columns" : "rows",
 					"values": data
 				};
 
@@ -205,8 +196,7 @@
 		 * Let's use all cells of the first visible sheet by default. To do that, we need to provide its title.
 		 */
 		async findSheet() {
-			const url = new URL(`${_.apiDomain}/${this.spreadsheet}`);
-			url.searchParams.set("key", this.apikey);
+			const url = _.buildURL(this.spreadsheet, { key: this.apikey });
 
 			const response = await fetch(url.href);
 			const spreadsheet = await response.json();
@@ -217,14 +207,13 @@
 			this.sheetAndRange = `'${visibleSheet.properties.title}'`;
 
 			// Rebuild apiURL using the new range.
-			this.apiURL = new URL(`${_.apiDomain}/${this.spreadsheet}/values/${this.sheetAndRange}`);
-			this.apiURL.searchParams.set("key", this.apikey);
+			this.apiURL = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
 		},
 
 		oAuthParams: () => "&redirect_uri=https://auth.mavo.io&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.profile",
 
 		static: {
-			apiDomain: "https://sheets.googleapis.com/v4/spreadsheets",
+			apiDomain: "https://sheets.googleapis.com/v4/spreadsheets/",
 			oAuth: "https://accounts.google.com/o/oauth2/auth",
 			key: "380712995757-4e9augrln1ck0soj8qgou0b4tnr30o42.apps.googleusercontent.com", // Client ID for PUT requests
 
@@ -256,6 +245,21 @@
 
 					return Object.assign(prev, { [prop]: values[i] });
 				}, {});
+			},
+
+			/**
+			 * Returns a newly created URL object with provided as an argument query parameters.
+			 * @param {string} url Relative URL.
+			 * @param {object} params Query parameters.
+			 */
+			buildURL(url, params = {}) {
+				url = new URL(url, _.apiDomain);
+
+				for (const p in params) {
+					url.searchParams.set(p, params[p]);
+				}
+
+				return url;
 			}
 		}
 	}));
