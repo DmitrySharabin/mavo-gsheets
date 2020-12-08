@@ -17,11 +17,11 @@
 		id: "GSheets",
 
 		constructor() {
-			this.permissions.on(["read", "edit", "add", "delete", "save"]);
+			this.permissions.on(["read", "edit", "add", "delete", "login"]);
 
 			// Since we need an access token to write data back to a spreadsheet,
 			// let's check whether we already have one.
-			this.oAuthenticate(true);
+			this.login(true);
 		},
 
 		update(url, o) {
@@ -142,35 +142,61 @@
 				const url = new URL(this.apiURL);
 				url.searchParams.set("valueInputOption", "RAW");
 
-				if (!this.isAuthenticated()) {
-					await this.oAuthenticate();
-				}
-
 				const body = {
 					"range": this.sheetAndRange,
 					"majorDimension": this.dataInColumns ? "COLUMNS" : "ROWS",
 					"values": data
 				};
 
-				return this.request(url, body, "PUT")
-					.catch(async e => {
-						if (e.status === 401) {
-							// If the OAuth access token has expired, remove it, re-authenticate a user, and repeat the request.
-							this.accessToken = null;
-							await this.oAuthenticate();
-
-							return this.request(url, body, "PUT");
-						}
-					})
-					.catch(e => {
-						if (e.status === 403) {
-							// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
-							this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
-						}
-					});
+				return this.request(url, body, "PUT").catch(xhr => {
+					if (xhr.status === 403) {
+						// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
+						this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
+					}
+				});
 			} catch (e) {
 				return null;
 			}
+		},
+
+		login(passive) {
+			return this.oAuthenticate(passive)
+				.then(() => this.getUser())
+				.catch(xhr => {
+					if (xhr.status === 401) {
+						// Unauthorized. Access token we have is invalid, discard it.
+						this.logout();
+					}
+				})
+				.then(() => {
+					if (this.user) {
+						this.permissions.on(["save", "logout"]);
+					}
+				});
+		},
+
+		logout() {
+			return this.oAuthLogout().then(() => {
+				this.user = null;
+
+				this.permissions.on(["edit", "add", "delete"]);
+			});
+		},
+
+		getUser() {
+			if (this.user) {
+				return Promise.resolve(this.user);
+			}
+
+			return this.request("https://www.googleapis.com/oauth2/v2/userinfo").then(info => {
+				this.user = {
+					name: info.name,
+					avatar: info.picture,
+					info
+				};
+
+				$.fire(this.mavo.element, "mv-login", { backend: this });
+			});
 		},
 
 		/**
@@ -195,7 +221,7 @@
 			this.apiURL.searchParams.set("key", this.apikey);
 		},
 
-		oAuthParams: () => "&redirect_uri=https://auth.mavo.io&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets",
+		oAuthParams: () => "&redirect_uri=https://auth.mavo.io&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.profile",
 
 		static: {
 			apiDomain: "https://sheets.googleapis.com/v4/spreadsheets",
