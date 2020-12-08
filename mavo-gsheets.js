@@ -139,55 +139,56 @@
 					"values": data
 				};
 
-				return this.request(url, body, "PUT").catch(xhr => {
-					if (xhr.status === 403) {
-						// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
-						this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
-					}
-				});
+				const res = await this.request(url, body, "PUT");
+
+				return res;
 			} catch (e) {
+				if (e.status === 403) {
+					// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
+					this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
+				}
+
 				return null;
 			}
 		},
 
-		login(passive) {
-			return this.oAuthenticate(passive)
-				.then(() => this.getUser())
-				.catch(xhr => {
-					if (xhr.status === 401) {
-						// Unauthorized. Access token we have is invalid, discard it.
-						this.logout();
-					}
-				})
-				.then(() => {
-					if (this.user) {
-						this.permissions.on(["save", "logout"]);
-					}
-				});
+		async login(passive) {
+			try {
+				await this.oAuthenticate(passive);
+				await this.getUser();
+
+				if (this.user) {
+					this.permissions.on(["save", "logout"]);
+				}
+			} catch (e) {
+				if (e.status === 401) {
+					// Unauthorized. Access token we have is invalid, discard it.
+					this.logout();
+				}
+			}
 		},
 
-		logout() {
-			return this.oAuthLogout().then(() => {
-				this.user = null;
+		async logout() {
+			await this.oAuthLogout();
 
-				this.permissions.on(["edit", "add", "delete"]);
-			});
+			this.user = null;
+			this.permissions.on(["edit", "add", "delete"]);
 		},
 
-		getUser() {
+		async getUser() {
 			if (this.user) {
-				return Promise.resolve(this.user);
+				return this.user;
 			}
 
-			return this.request("https://www.googleapis.com/oauth2/v2/userinfo").then(info => {
-				this.user = {
-					name: info.name,
-					avatar: info.picture,
-					info
-				};
+			const info = await this.request("https://www.googleapis.com/oauth2/v2/userinfo");
 
-				$.fire(this.mavo.element, "mv-login", { backend: this });
-			});
+			this.user = {
+				name: info.name,
+				avatar: info.picture,
+				info
+			};
+
+			$.fire(this.mavo.element, "mv-login", { backend: this });
 		},
 
 		/**
