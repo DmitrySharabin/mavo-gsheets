@@ -152,20 +152,22 @@
 					"values": data
 				};
 
-				return this.request(url, body, "PUT").catch(async e => {
-					if (e.status === 401) {
-						// If the OAuth access token has expired, remove it, re-authenticate a user, and repeat the request.
-						this.accessToken = null;
-						await this.oAuthenticate();
+				return this.request(url, body, "PUT")
+					.catch(async e => {
+						if (e.status === 401) {
+							// If the OAuth access token has expired, remove it, re-authenticate a user, and repeat the request.
+							this.accessToken = null;
+							await this.oAuthenticate();
 
-						return this.request(url, body, "PUT");
-					}
-
-					if (e.status === 403) {
-						// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
-						this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
-					}
-				});
+							return this.request(url, body, "PUT");
+						}
+					})
+					.catch(e => {
+						if (e.status === 403) {
+							// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
+							this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
+						}
+					});
 			} catch (e) {
 				return null;
 			}
