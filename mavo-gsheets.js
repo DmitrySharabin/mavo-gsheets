@@ -147,6 +147,9 @@
 					// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
 					this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
 				}
+				else {
+					Mavo.warn(e.response.error.message);
+				}
 
 				return null;
 			}
