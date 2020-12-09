@@ -1,5 +1,7 @@
 # Google Sheets Backend
 
+**Warning:** It's an alpha version of the plugin—something might change in it. We are planning to make it more powerful shortly, so stay in touch and tell us what you think.
+
 ## Restrictions
 
 Data must have headings:
@@ -13,6 +15,12 @@ Only one collection. Property names inside the collection must correspond to hea
 
 Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv-source`/`mv-init` and specify additional parameters via the `mv-storage-*`/`mv-source-*`/`mv-init-*` family of attributes if needed.
 
+To write data back to the spreadsheet (if allowed by specified permissions), users must log in.
+
+The plugin supports *private spreadsheets* as well. However, to read data from and write them back to a private spreadsheet, you *must* log in. The plugin won't let you work with *other's private spreadsheets*, only yours.
+
+**Note:** You can find additional information about sharing a spreadsheet with the corresponding permissions in the [Google Sheets help](https://support.google.com/docs/answer/2494822?hl=en).
+
 ## Supported values of the `mv-storage-*` (`mv-source-*`, `mv-init-*`) family of attributes
 
 | Value         | Description                                                                                             |
@@ -24,13 +32,13 @@ Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv
 **Note:** We recommend providing either *sheet title* or *range* to avoid extra network requests.
 ## A1 notation for specifying cell ranges
 
-This is a string like `A1:B2` that refers to a group of cells in the sheet and is typically used in formulas. For example, valid ranges are:
+This is a string like `A1:B2` that refers to a group of cells in the sheet (the first visible sheet) and is typically used in formulas. For example, valid ranges are:
 
 - `A1:B2` refers to the first two cells in the top two rows of the sheet.
-- `A:A` refers to all the cells in the first column of the sheet.
+- `A:C` refers to all the cells in the first three columns of the sheet.
 - `1:2` refers to all the cells in the first two rows of the sheet.
 - `A5:A` refers to all the cells of the first column of the sheet, from row 5 onward.
-- `A1:B2` refers to the first two cells in the top two rows of the first visible sheet.
+- `C2:2` refers to all the cells of the second row of the sheet, from column C onward.
 
 If not specified, supposed all the cells in the sheet.
 
@@ -58,7 +66,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 <h2>Demo</h2>
 
 ```markup
-<div mv-app="todoApp"
+<div mv-app="todoApp" mv-plugins="gsheets"
 		mv-storage="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
 		mv-storage-sheet="Todos">
 
@@ -71,7 +79,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 	</p>
 </div>
 
-<div mv-app
+<div mv-app mv-plugins="gsheets"
 		mv-source="https://docs.google.com/spreadsheets/"
 		mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g"
 		mv-source-range="1:2"
