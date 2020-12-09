@@ -65,7 +65,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 | `mv-gsheets-write-permission-denied` | You don't have permission to save data to the spreadsheet.                                                                                        |
 | `mv-gsheets-read-permission-denied`  | You don't have permission to read data from the spreadsheet.                                                                                      |
 
-<h2>Demo</h2>
+## Demo 1
 
 ```markup
 <div mv-app="todoApp" mv-plugins="gsheets"
@@ -82,7 +82,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 </div>
 ```
 
-<h2>Demo</h2>
+## Demo 2
 
 ```markup
 <div mv-app mv-plugins="gsheets"
