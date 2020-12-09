@@ -58,10 +58,12 @@ The plugin supports a number of options for customizing the way it reads/writes 
 
 ### Localization strings
 
-| id                                  | Value                                                                                                                                             |
-|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| `mv-gsheets-range-not-provided`     | If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs. |
-| `mv-gsheets-empty-cells-in-headings` | It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.                           |
+| id                                   | Value                                                                                                                                             |
+|--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mv-gsheets-range-not-provided`      | If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs. |
+| `mv-gsheets-empty-cells-in-headings` | It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.                         |
+| `mv-gsheets-write-permission-denied` | You don't have permission to save data to the spreadsheet.                                                                                        |
+| `mv-gsheets-read-permission-denied`  | You don't have permission to read data from the spreadsheet.                                                                                      |
 
 <h2>Demo</h2>
 
