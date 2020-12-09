@@ -80,7 +80,11 @@ The plugin supports a number of options for customizing the way it reads/writes 
 		</label>
 	</p>
 </div>
+```
 
+<h2>Demo</h2>
+
+```markup
 <div mv-app mv-plugins="gsheets"
 		mv-source="https://docs.google.com/spreadsheets/"
 		mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g"
