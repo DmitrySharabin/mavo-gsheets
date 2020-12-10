@@ -260,11 +260,15 @@
 			this.apiURL = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
 		},
 
-		oAuthParams: () => "&redirect_uri=https://auth.mavo.io&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.profile",
+		oAuthParams: () => `&redirect_uri=${encodeURIComponent("https://auth.mavo.io")}&response_type=code&scope=${encodeURIComponent(_.scopes.join(" "))}`,
 
 		static: {
 			apiDomain: "https://sheets.googleapis.com/v4/spreadsheets/",
 			oAuth: "https://accounts.google.com/o/oauth2/auth",
+			scopes: [
+				"https://www.googleapis.com/auth/spreadsheets",
+				"https://www.googleapis.com/auth/userinfo.profile"
+			],
 			key: "380712995757-4e9augrln1ck0soj8qgou0b4tnr30o42.apps.googleusercontent.com", // Client ID for PUT requests
 
 			/**
