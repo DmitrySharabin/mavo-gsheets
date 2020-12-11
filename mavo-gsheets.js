@@ -178,7 +178,7 @@
 					this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
 				}
 				else {
-					Mavo.warn(e.response.error.message);
+					Mavo.warn(e);
 				}
 
 				return null;
