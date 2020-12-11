@@ -72,72 +72,69 @@
 				if (this.sheetAndRange === "") {
 					await this.findSheet();
 				}
-
-				const url = _.buildURL(this.apiURL, {
-					"majorDimension": this.dataInColumns ? "columns" : "rows",
-					"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
-				});
-
-				let response;
-
-				if (this.isAuthenticated()) {
-					response = await fetch(url.href, {
-						headers: {
-							Authorization: `Bearer ${this.accessToken}`
-						},
-					});
-				}
-				else {
-					response = await fetch(url.href);
-				}
-
-				// The request failed? It doesn't make sense to proceed.
-				if (response.status !== 200) {
-					if (response.status === 403) {
-						// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
-						Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
-					}
-
-					return null;
-				}
-
-				const json = await response.json();
-				const values = json.values;
-
-				let [headings, ...data] = values;
-
-				if (headings.some(h => !h.trim().length)) {
-					// Not all data has headings. Warn an author.
-					Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headings"));
-
-					// What if there are more than one data set and an author didn't provide a data range?
-					// Let them know about that.
-					if (!this.range) {
-						Mavo.warn(this.mavo._("mv-gsheets-range-not-provided"));
-					}
-				}
-
-				// If needed, fix headings so we can use them as property names.
-				if (this.transformHeadings) {
-					headings = headings.map(heading => Mavo.Functions.idify(heading));
-				}
-
-				// Assign data to corresponding properties.
-				data = data.map(d => _.zipObject(headings, d));
-
-				return data;
-			}
-			catch (e) {
+			} catch (e) {
 				if (e.status === 403) {
 					// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
 					Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
 				}
 				else {
-					Mavo.warn(e.response.error.message);
+					Mavo.warn(e);
 				}
 
 				return null;
 			}
+
+			const url = _.buildURL(this.apiURL, {
+				"majorDimension": this.dataInColumns ? "columns" : "rows",
+				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
+			});
+
+			// Prefer an unauthenticated request. If it fails, try the authenticated one.
+			let response = await fetch(url.href);
+
+			if (!response.ok && this.isAuthenticated()) {
+				response = await fetch(url.href, {
+					headers: {
+						Authorization: `Bearer ${this.accessToken}`
+					},
+				});
+			}
+
+			// The request failed? It doesn't make sense to proceed.
+			if (!response.ok) {
+				if (response.status === 403) {
+					// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
+					Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
+				}
+
+				return null;
+			}
+
+			const json = await response.json();
+			const values = json.values;
+
+			let [headings, ...data] = values ?? [[], []];
+
+			if (headings.some(h => !h.trim().length)) {
+				// Not all data has headings. Warn an author.
+				Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headings"));
+
+				// What if there are more than one data set and an author didn't provide a data range?
+				// Let them know about that.
+				if (!this.range) {
+					Mavo.warn(this.mavo._("mv-gsheets-range-not-provided"));
+				}
+			}
+
+			// If needed, fix headings so we can use them as property names.
+			if (this.transformHeadings) {
+				headings = headings.map(heading => Mavo.Functions.idify(heading));
+			}
+
+			// Assign data to corresponding properties.
+			data = data.map(d => _.zipObject(headings, d));
+
+			return data;
 		},
 
 		/**
@@ -231,21 +228,20 @@
 		 */
 		async findSheet() {
 			const url = _.buildURL(this.spreadsheet, { key: this.apikey });
-			let response;
 
-			if (this.isAuthenticated()) {
+			// Prefer an unauthenticated request. If it fails, try the authenticated one.
+			let response = await fetch(url.href);
+
+			if (!response.ok && this.isAuthenticated()) {
 				response = await fetch(url.href, {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
 					},
 				});
 			}
-			else {
-				response = await fetch(url.href);
-			}
 
 			// The request failed? It doesn't make sense to proceed.
-			if (response.status !== 200) {
+			if (!response.ok) {
 				return Promise.reject(response);
 			}
 
