@@ -138,15 +138,17 @@
 		},
 
 		/**
-		 * Low-level saving code.
+		 * High level function for storing data.
 		 */
-		async put() {
+		async store(data) {
 			// Get the name of the first property that is a collection without mv-value.
 			const collection = this.mavo.root.getNames((_, n) => {
 				return n instanceof Mavo.Collection && !n.expressions?.[0]?.isDynamicObject;
 			})[0];
 
-			let data = this.mavo.root.children?.[collection]?.getData();
+			// If there is no such collection, try to use the data provided by Mavo.
+			// This will let us store a set of simple properties and make the plugin more universal.
+			data = this.mavo.root.children?.[collection]?.getData() ?? data;
 
 			if (data?.length) {
 				// If there is data, transform it so that Google Sheets API could handle it.
