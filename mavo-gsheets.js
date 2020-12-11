@@ -139,19 +139,22 @@
 
 		/**
 		 * Low-level saving code.
-		 * @param {string} serialized Data serialized according to this.format.
-		 * @param {string} path Path to store data.
-		 * @param {object} o Arbitrary options.
 		 */
-		async put(serialized, path = this.path, o = {}) {
-			// WARNING! If app has more than one collection, this code fails.
-			let data = JSON.parse(serialized);
+		async put() {
+			// Get the name of the first property that is a collection without mv-value.
+			const collection = this.mavo.root.getNames((_, n) => {
+				return n instanceof Mavo.Collection && !n.expressions?.[0]?.isDynamicObject;
+			})[0];
 
-			// Transform data so that Google Sheets API could handle it.
-			const headings = Object.keys(data[0]);
+			let data = this.mavo.root.children?.[collection]?.getData();
 
-			data = data.map(d => Object.values(d));
-			data = [headings, ...data];
+			if (data?.length) {
+				// If there is data, transform it so that Google Sheets API could handle it.
+				const headings = Object.keys(data[0]);
+
+				data = data.map(d => Object.values(d));
+				data = [headings, ...data];
+			}
 
 			try {
 				if (this.sheetAndRange === "") {
