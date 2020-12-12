@@ -73,12 +73,12 @@
 					await this.findSheet();
 				}
 			} catch (e) {
-				if (e.status === 403) {
+				if (e?.status === 403) {
 					// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
 					Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
 				}
 				else {
-					Mavo.warn(e);
+					Mavo.warn(e?.message || e?.response?.error?.message);
 				}
 
 				return null;
@@ -179,12 +179,12 @@
 
 				return res;
 			} catch (e) {
-				if (e.status === 403) {
+				if (e?.status === 403) {
 					// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
 					this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
 				}
 				else {
-					Mavo.warn(e);
+					Mavo.warn(e?.message || e?.response?.error?.message);
 				}
 
 				return null;
