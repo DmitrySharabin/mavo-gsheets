@@ -17,6 +17,8 @@ Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv
 
 To write data back to the spreadsheet (if allowed by specified permissions), users must log in.
 
+**Warning!** If you don't specify a range where to put data, **all data on the sheet** you put your data on will be erased before writing the new data.
+
 The plugin supports *private spreadsheets* as well. However, to read data from and write them back to a private spreadsheet, you *must* log in. The plugin won't let you work with *other's private spreadsheets*, only yours.
 
 **Note:** You can find additional information about sharing a spreadsheet with the corresponding permissions in the [Google Sheets help](https://support.google.com/docs/answer/2494822?hl=en).
