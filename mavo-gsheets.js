@@ -163,8 +163,12 @@
 					await this.findSheet();
 				}
 
-				const url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
+				// Clear the existing data before writing the new one.
+				let url = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}:clear`, { key: this.apikey });
+				await this.request(url, null, "POST");
 
+				// Write the new data.
+				url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
 				const body = {
 					"range": this.sheetAndRange,
 					"majorDimension": this.dataInColumns ? "columns" : "rows",
