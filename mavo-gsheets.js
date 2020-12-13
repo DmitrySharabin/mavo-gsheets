@@ -202,6 +202,10 @@
 					// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
 					this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
 				}
+				else if (e?.status === 400 && e?.response?.error?.status === "INVALID_ARGUMENT") {
+					// An app's data structure is not supported
+					this.mavo.error(this.mavo._("mv-gsheets-unsupported-data-structure"));
+				}
 				else {
 					Mavo.warn(e?.message || e?.response?.error?.message);
 				}
@@ -346,6 +350,7 @@
 		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
 		"mv-gsheets-empty-cells-in-headings": "It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.",
 		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet.",
-		"mv-gsheets-read-permission-denied": "You don't have permission to read data from the spreadsheet."
+		"mv-gsheets-read-permission-denied": "You don't have permission to read data from the spreadsheet.",
+		"mv-gsheets-unsupported-data-structure": "It looks like your app's data has a structure that is not supported by the GSheets plugin."
 	});
 })(Bliss)
