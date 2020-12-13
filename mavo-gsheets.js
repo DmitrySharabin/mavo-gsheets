@@ -157,10 +157,24 @@
 
 			if (data?.length) {
 				// If there is data, transform it so that Google Sheets API could handle it.
-				const headings = Object.keys(data[0]);
+				let headings;
 
-				data = data.map(d => Object.values(d));
+				if ($.type(data[0]) === "object") {
+					// We have a complex collection
+					headings = Object.keys(data[0]);
+					data = data.map(d => Object.values(d));
+				}
+				else {
+					// We have a simple collection
+					headings = [collection];
+					data = data.map(d => [d]);
+				}
+
 				data = [headings, ...data];
+			}
+			else {
+				// We have a set of simple properties
+				data = [Object.keys(data), Object.values(data)];
 			}
 
 			try {
