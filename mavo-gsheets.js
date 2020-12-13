@@ -113,7 +113,12 @@
 			const json = await response.json();
 			const values = json.values;
 
-			let [headings, ...data] = values ?? [[], []];
+			if (!values) {
+				// There is no data to work with
+				return null;
+			}
+
+			let [headings, ...data] = values;
 
 			if (headings.some(h => !h.trim().length)) {
 				// Not all data has headings. Warn an author.
