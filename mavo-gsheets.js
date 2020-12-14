@@ -34,7 +34,7 @@
 			 * @property {string} range — A range with data in A1 notation. If not specified, supposed all the cells in the sheet.
 			 */
 			this.apikey = o.apikey ?? "AIzaSyCiAkSCE96adO_mFItVdS9fi7CXfTiwhe4";
-			this.spreadsheet = o.spreadsheet ?? this.url.pathname.slice(1).split("/")[2];
+			this.spreadsheet = o.spreadsheet ?? this.url.pathname?.slice(1)?.split("/")[2];
 			this.sheet = o.sheet;
 			this.range = o.range;
 
@@ -73,12 +73,12 @@
 					await this.findSheet();
 				}
 			} catch (e) {
-				if (e?.status === 403) {
+				if (e.status === 403) {
 					// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
 					Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
 				}
 				else {
-					Mavo.warn(e?.message || e?.response?.error?.message);
+					Mavo.warn(e.message || e.response?.error?.message);
 				}
 
 				return null;
@@ -120,7 +120,7 @@
 
 			let [headings, ...data] = values;
 
-			if (headings.some(h => !h.trim().length)) {
+			if (headings.some(h => !h?.trim?.()?.length)) {
 				// Not all data has headings. Warn an author.
 				Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headings"));
 
@@ -198,16 +198,16 @@
 
 				return res;
 			} catch (e) {
-				if (e?.status === 403) {
+				if (e.status === 403) {
 					// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
 					this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
 				}
-				else if (e?.status === 400 && e?.response?.error?.status === "INVALID_ARGUMENT") {
+				else if (e.status === 400 && e.response?.error?.status === "INVALID_ARGUMENT") {
 					// An app's data structure is not supported
 					this.mavo.error(this.mavo._("mv-gsheets-unsupported-data-structure"));
 				}
 				else {
-					Mavo.warn(e?.message || e?.response?.error?.message);
+					Mavo.warn(e.message || e.response?.error?.message);
 				}
 
 				return null;
@@ -279,7 +279,7 @@
 
 			const spreadsheet = await response.json();
 
-			const visibleSheet = spreadsheet?.sheets?.find(sheet => !sheet.properties.hidden);
+			const visibleSheet = spreadsheet?.sheets?.find?.(sheet => !sheet.properties?.hidden);
 
 			// Wrap the sheet title into single quotes since it might have spaces in it.
 			this.sheetAndRange = `'${visibleSheet?.properties?.title}'`;
@@ -321,7 +321,7 @@
 			zipObject: function (props, values) {
 				return props.reduce((prev, prop, i) => {
 					// Skip empty property names (and corresponding data) since they are useless.
-					if (!prop.trim().length) {
+					if (!prop.trim?.()?.length) {
 						return prev;
 					}
 
