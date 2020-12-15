@@ -148,34 +148,37 @@
 		async store(data) {
 			// Get the name of the first property that is a collection without mv-value.
 			const collection = this.mavo.root.getNames((_, n) => {
-				return n instanceof Mavo.Collection && !n.expressions?.[0]?.isDynamicObject;
+				return (n instanceof Mavo.Collection || n instanceof Mavo.ImplicitCollection) && !n.expressions?.[0]?.isDynamicObject;
 			})[0];
 
-			// If there is no such collection, try to use the data provided by Mavo.
-			// This will let us store a set of simple properties and make the plugin more universal.
-			data = this.mavo.root.children?.[collection]?.getData() ?? data;
+			data = this.mavo.root.children[collection]?.getData();
 
-			if (data?.length) {
-				// If there is data, transform it so that Google Sheets API could handle it.
-				let headings;
+			if (!data) {
+				// Data has an unsupported structure
+				Mavo.warn(this.mavo._("mv-gsheets-unsupported-data-structure"));
 
-				if ($.type(data[0]) === "object") {
-					// We have a complex collection
-					headings = Object.keys(data[0]);
-					data = data.map(d => Object.values(d));
-				}
-				else {
-					// We have a simple collection
-					headings = [collection];
-					data = data.map(d => [d]);
-				}
+				return true; // Tell Mavo that data is stored.
+			}
+			else if (!data.length) {
+				// No data to store, but we must tell Mavo that they are.
+				return true;
+			}
 
-				data = [headings, ...data];
+			// If there is data, transform it so that Google Sheets API could handle it.
+			let headings;
+
+			if ($.type(data[0]) === "object") {
+				// We have a complex collection
+				headings = Object.keys(data[0]);
+				data = data.map(d => Object.values(d));
 			}
 			else {
-				// We have a set of simple properties
-				data = [Object.keys(data), Object.values(data)];
+				// We have a simple collection
+				headings = [collection];
+				data = data.map(d => [d]);
 			}
+
+			data = [headings, ...data];
 
 			try {
 				if (this.sheetAndRange === "") {
