@@ -151,34 +151,43 @@
 				return (n instanceof Mavo.Collection || n instanceof Mavo.ImplicitCollection) && !n.expressions?.[0]?.isDynamicObject;
 			})[0];
 
-			data = this.mavo.root.children[collection]?.getData();
+			data = this.mavo.root.children[collection]?.getData() ?? data;
 
-			if (!data) {
-				// Data has an unsupported structure
-				Mavo.warn(this.mavo._("mv-gsheets-unsupported-data-structure"));
+			if (!collection) {
+				// If there is no collection, try to use the data provided by Mavo.
+				// We might have a set of simple properties.
 
-				return true; // Tell Mavo that data is stored.
-			}
-			else if (!data.length) {
-				// No data to store, but we must tell Mavo that they are.
-				return true;
-			}
-
-			// If there is data, transform it so that Google Sheets API could handle it.
-			let headings;
-
-			if ($.type(data[0]) === "object") {
-				// We have a complex collection
-				headings = Object.keys(data[0]);
-				data = data.map(d => Object.values(d));
+				// Transform data so that Google Sheets API could handle it.
+				data = [Object.keys(data), Object.values(data)];
 			}
 			else {
-				// We have a simple collection
-				headings = [collection];
-				data = data.map(d => [d]);
+				// There is a collection to work with
+				if (!data.length) {
+					// No data to store, but we must tell Mavo that they are.
+					return true;
+				}
+
+				// If there is data, transform it so that Google Sheets API could handle it.
+				let headings;
+
+				if ($.type(data[0]) === "object") {
+					// We have a complex collection
+					headings = Object.keys(data[0]);
+					data = data.map(d => Object.values(d));
+				}
+				else {
+					// We have a simple collection
+					headings = [collection];
+					data = data.map(d => [d]);
+				}
+
+				data = [headings, ...data];
 			}
 
-			data = [headings, ...data];
+			if (!data[0].length) {
+				// No data to store, no need to proceed.
+				return true;
+			}
 
 			try {
 				if (this.sheetAndRange === "") {
