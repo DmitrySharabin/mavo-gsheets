@@ -119,6 +119,7 @@
 			}
 
 			let [headings, ...data] = values;
+			this.recordsCount = data.length;
 
 			if (headings.some(h => !h?.trim?.()?.length)) {
 				// Not all data has headings. Warn an author.
@@ -194,12 +195,19 @@
 					await this.findSheet();
 				}
 
-				// Clear the existing data before writing the new one.
-				let url = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}:clear`, { key: this.apikey });
-				await this.request(url, null, "POST");
+				const recordsCount = data.length - 1;
+
+				// If we write back fewer records than we previously got, we need to remove the old data.
+				// The way we can do it is to provide records filled with empty strings.
+				if (recordsCount < this.recordsCount) {
+					const record = Array(data[0].length).fill(""); // ["", ..., ""] — empty row/column of data
+					const records = Array(this.recordsCount - recordsCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
+
+					data = data.concat(records);
+				}
 
 				// Write the new data.
-				url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
+				const url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
 				const body = {
 					"range": this.sheetAndRange,
 					"majorDimension": this.dataInColumns ? "columns" : "rows",
@@ -207,6 +215,9 @@
 				};
 
 				const res = await this.request(url, body, "PUT");
+
+				// Saved successfully, update the field.
+				this.recordsCount = recordsCount;
 
 				return res;
 			} catch (e) {
