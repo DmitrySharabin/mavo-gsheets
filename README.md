@@ -27,7 +27,7 @@ The plugin supports *private spreadsheets* as well. However, to read data from a
 
 | Value         | Description                                                                                             |
 |---------------|---------------------------------------------------------------------------------------------------------|
-| `sheet`       | (*Optional*) A sheet title to read data from. If not provided, the first visible sheet will be used.    |
+| `sheet`       | (*Optional*) A sheet title to read/write data from/to. If not provided, the first visible sheet will be used.    |
 | `range`       | (*Optional*) A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |
 | `spreadsheet` | (*Optional*) A spreadsheet id. The value between the `/d/` and the `/edit` in the URL of a spreadsheet. By specifying this value, you can redefine the spreadsheet id the plugin got from the provided spreadsheet URL. In other words, you'll be able to work with another spreadsheet. |
 
