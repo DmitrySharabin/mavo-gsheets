@@ -207,51 +207,130 @@
 				return true;
 			}
 
-			try {
-				if (this.sheetAndRange === "") {
+			if (this.sheetAndRange === "") {
+				try {
 					await this.findSheet();
+				} catch (e) {
+					switch (e.status) {
+						case 403:
+							// No write permissions
+							this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
+							break;
+						case 404:
+							// No spreadsheet
+							this.mavo.error(this.mavo._("mv-gsheets-spreadsheet-not-found"));
+							break;
+						default:
+							Mavo.warn(e.message || e.response?.error?.message);
+					}
+
+					return true;
 				}
-
-				const recordsCount = data.length - 1;
-
-				// If we write back fewer records than we previously got, we need to remove the old data.
-				// The way we can do it is to provide records filled with empty strings.
-				if (recordsCount < this.recordsCount) {
-					const record = Array(data[0].length).fill(""); // ["", ..., ""] — empty row/column of data
-					const records = Array(this.recordsCount - recordsCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
-
-					data = data.concat(records);
-				}
-
-				// Write the new data.
-				const url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
-				const body = {
-					"range": this.sheetAndRange,
-					"majorDimension": this.dataInColumns ? "columns" : "rows",
-					"values": data
-				};
-
-				const res = await this.request(url, body, "PUT");
-
-				// Saved successfully, update the field.
-				this.recordsCount = recordsCount;
-
-				return res;
-			} catch (e) {
-				if (e.status === 403) {
-					// If a user doesn't have permissions to write to a spreadsheet, tell them about it.
-					this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
-				}
-				else if (e.status === 400 && e.response?.error?.status === "INVALID_ARGUMENT") {
-					// An app's data structure is not supported
-					this.mavo.error(this.mavo._("mv-gsheets-unsupported-data-structure"));
-				}
-				else {
-					Mavo.warn(e.message || e.response?.error?.message);
-				}
-
-				return null;
 			}
+
+			const recordsCount = data.length - 1;
+
+			// If we write back fewer records than we previously got, we need to remove the old data.
+			// The way we can do it is to provide records filled with empty strings.
+			if (recordsCount < this.recordsCount) {
+				const record = Array(data[0].length).fill(""); // ["", ..., ""] — empty row/column of data
+				const records = Array(this.recordsCount - recordsCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
+
+				data = data.concat(records);
+			}
+
+			// Write the new data.
+			const url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
+			const body = {
+				"range": this.sheetAndRange,
+				"majorDimension": this.dataInColumns ? "columns" : "rows",
+				"values": data
+			};
+
+			let res;
+			try {
+				res = await this.request(url, body, "PUT");
+			} catch (e) {
+				switch (e.status) {
+					case 403:
+						// No write permissions
+						this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
+						return true;
+					case 404:
+						// No spreadsheet
+						this.mavo.error(this.mavo._("mv-gsheets-spreadsheet-not-found"));
+						return true;
+					default:
+						res = e;
+				}
+			}
+
+			if (res.response && res.status !== 200) { // res.status == 400
+				if (this.sheet) {
+					// It might be there is no sheet with the specified name.
+					// Let's check it.
+					const spreadsheet = await this.request(_.buildURL(this.spreadsheet));
+					const sheet = spreadsheet.sheets?.find?.(sheet => sheet.properties?.title === this.sheet);
+
+					if (!sheet) {
+						// There is no. Let's try to create one.
+						const req = {
+							"requests": [
+								{
+									"addSheet": {
+										"properties": {
+											"title": this.sheet
+										}
+									}
+								}
+							]
+						};
+
+						try {
+							await this.request(_.buildURL(`${this.spreadsheet}:batchUpdate`), req, "POST");
+
+							// Warn a user about the newly created sheet.
+							Mavo.warn(this.mavo._("mv-gsheets-no-sheet-to-store-data", { name: this.sheet }));
+
+							// Try to store data one more time.
+							res = await this.request(url, body, "PUT");
+						} catch (e) {
+							res = e;
+						}
+					}
+				}
+
+				// Something went wrong?
+				if (res.response && res.status !== 200) {
+					if (res.response.error?.message?.startsWith("Unable to parse range")) {
+						// Invalid range
+						this.mavo.error(this.mavo._("mv-gsheets-invalid-range"));
+					}
+					else if (res.response.error?.message?.startsWith("Requested writing within range")) {
+						// The range is too small
+						this.mavo.error(this.mavo._("mv-gsheets-small-range"));
+					}
+					else if (res.response.error?.message?.includes("protected cell or object")) {
+						// The sheet and/or range is protected
+						this.mavo.error(res.response.error.message);
+					}
+					else if (res.response.error?.message?.startsWith("Invalid values")) {
+						// An app's data structure is not supported
+						this.mavo.error(this.mavo._("mv-gsheets-unsupported-data-structure"));
+					}
+					else {
+						// Unknown error
+						Mavo.warn(res.response.error.message);
+					}
+
+					return true;
+				}
+			};
+
+			// Saved successfully, update the field.
+			this.recordsCount = recordsCount;
+
+			return res;
 		},
 
 		async login(passive) {
