@@ -73,12 +73,17 @@
 					await this.findSheet();
 				}
 			} catch (e) {
-				if (e.status === 403) {
-					// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
-					Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
-				}
-				else {
-					Mavo.warn(e.message || e.response?.error?.message);
+				switch (e.status) {
+					case 403:
+						// No read permissions
+						this.mavo.error(this.mavo._("mv-gsheets-read-permission-denied"));
+						break;
+					case 404:
+						// No spreadsheet
+						this.mavo.error(this.mavo._("mv-gsheets-spreadsheet-not-found"));
+						break;
+					default:
+						Mavo.warn(e.message || e.response?.error?.message);
 				}
 
 				return null;
@@ -102,9 +107,21 @@
 
 			// The request failed? It doesn't make sense to proceed.
 			if (!response.ok) {
-				if (response.status === 403) {
-					// If a user doesn't have permissions to read data from a spreadsheet, tell them about it.
-					Mavo.warn(this.mavo._("mv-gsheets-read-permission-denied"));
+				switch (response.status) {
+					case 400:
+						// Invalid sheet name and/or data range
+						this.mavo.error(this.mavo._("mv-gsheets-no-sheet-or-invalid-range"));
+						break;
+					case 403:
+						// No read permissions
+						this.mavo.error(this.mavo._("mv-gsheets-read-permission-denied"));
+						break;
+					case 404:
+						// No spreadsheet
+						this.mavo.error(this.mavo._("mv-gsheets-spreadsheet-not-found"));
+						break;
+					default:
+						Mavo.warn(response.statusText);
 				}
 
 				return null;
