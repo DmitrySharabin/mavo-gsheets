@@ -1,6 +1,8 @@
 # Google Sheets Backend
 
-**Warning:** It's an alpha version of the plugin—something might change in it. We are planning to make it more powerful shortly, so stay in touch and tell us what you think.
+**Warning:** The plugin is in development—something still might change. We are planning to make it more powerful shortly, so stay in touch and tell us what you think.
+
+**Note:** Below, everything that applied to the `mv-storage` could be applied to `mv-source` and `mv-init` as well.
 
 ## Restrictions
 
@@ -9,21 +11,19 @@ Data must have headings:
 - in the *first row of the specified range*, if data is organized in rows
 - otherwise, in the *first column*.
 
-Only one collection. Property names inside the collection must correspond to headings in a spreadsheet, or the `transformHeadings` option must be provided in the `mv-storage-options` (`mv-source-options`, `mv-init-options`) attribute.
+Only one collection. Property names inside the collection must correspond to headings in a spreadsheet, or the `transformHeadings` option must be provided in the `mv-storage-options` attribute.
 
 ## Setting Up
 
-Share a spreadsheet and use the provided **URL** as a value for `mv-storage`/`mv-source`/`mv-init` and specify additional parameters via the `mv-storage-*`/`mv-source-*`/`mv-init-*` family of attributes if needed.
+Share a spreadsheet and use the provided **URL** as a value for `mv-storage` and specify additional parameters via the `mv-storage-*` family of attributes if needed.
 
 To write data back to the spreadsheet (if allowed by specified permissions), users must log in.
-
-**Warning!** If you don't specify a range where to put data, **all data on the sheet** you put your data on will be erased before writing the new data.
 
 The plugin supports *private spreadsheets* as well. However, to read data from and write them back to a private spreadsheet, you *must* log in. The plugin won't let you work with *other's private spreadsheets*, only yours.
 
 **Note:** You can find additional information about sharing a spreadsheet with the corresponding permissions in the [Google Sheets help](https://support.google.com/docs/answer/2494822?hl=en).
 
-## Supported values of the `mv-storage-*` (`mv-source-*`, `mv-init-*`) family of attributes
+## Supported values of the `mv-storage-*` family of attributes
 
 | Value         | Description                                                                                             |
 |---------------|---------------------------------------------------------------------------------------------------------|
@@ -48,7 +48,7 @@ Named ranges are also supported.
 
 ## Customization
 
-The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-storage-options` (`mv-source-options`, `mv-init-options`) attribute. To separating the options, you can use either commas or semicolons.
+The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-storage-options` attribute. To separating the options, you can use either commas or semicolons.
 
 ### Supported options
 
@@ -67,6 +67,11 @@ The plugin supports a number of options for customizing the way it reads/writes 
 | `mv-gsheets-write-permission-denied`    | You don't have permission to save data to the spreadsheet.                                                                                        |
 | `mv-gsheets-read-permission-denied`     | You don't have permission to read data from the spreadsheet.                                                                                      |
 | `mv-gsheets-unsupported-data-structure` | It looks like your app's data has a structure that is not supported by the GSheets plugin.                                                        |
+| `mv-gsheets-spreadsheet-not-found`      | We couldn't find the spreadsheet you specified.                                                                                                   |
+| `mv-gsheets-no-sheet-or-invalid-range`  | There is no sheet with the specified name in the spreadsheet, and/or the format you used to specify the data range is invalid.                    |
+| `mv-gsheets-invalid-range`              | The format you used to specify the data range for storing your data is invalid.                                                                   |
+| `mv-gsheets-no-sheet-to-store-data`     | We couldn't find the {name} sheet in the spreadsheet and created it.                                                                              |
+| `mv-gsheets-small-range`                | The range you specified isn't large enough to store all your data.                                                                                |
 
 ## Demo 1
 
