@@ -321,6 +321,7 @@
 				"https://www.googleapis.com/auth/userinfo.profile"
 			],
 			key: "380712995757-4e9augrln1ck0soj8qgou0b4tnr30o42.apps.googleusercontent.com", // Client ID for PUT requests
+			useCache: false, // We don't want to set the timestamp on all requests
 
 			/**
 			 * Determines whether the Google Sheets backend is used.
