@@ -375,6 +375,11 @@
 		"mv-gsheets-empty-cells-in-headings": "It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.",
 		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet.",
 		"mv-gsheets-read-permission-denied": "You don't have permission to read data from the spreadsheet.",
-		"mv-gsheets-unsupported-data-structure": "It looks like your app's data has a structure that is not supported by the GSheets plugin."
+		"mv-gsheets-unsupported-data-structure": "It looks like your app's data has a structure that is not supported by the GSheets plugin.",
+		"mv-gsheets-spreadsheet-not-found": "We couldn't find the spreadsheet you specified.",
+		"mv-gsheets-no-sheet-or-invalid-range": "There is no sheet with the specified name in the spreadsheet, and/or the format you used to specify the data range is invalid.",
+		"mv-gsheets-invalid-range": "The format you used to specify the data range for storing your data is invalid.",
+		"mv-gsheets-no-sheet-to-store-data": "We couldn't find the {name} sheet in the spreadsheet and created it.",
+		"mv-gsheets-small-range": "The range you specified isn't large enough to store all your data."
 	});
 })(Bliss)
