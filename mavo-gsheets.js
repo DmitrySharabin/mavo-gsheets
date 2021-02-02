@@ -48,7 +48,10 @@
 			if (o.options) {
 				Object.assign(this, Mavo.options(o.options));
 			}
+		},
 
+		// Define computed properties
+		get sheetAndRange() {
 			/**
 			 * Since sheet title and cells range are optional, we need to cover all the possible cases:
 			 *
@@ -56,9 +59,11 @@
 			 * – 'Sheet title'
 			 * – Range
 			 */
-			this.sheetAndRange = `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
+			return `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
+		},
 
-			this.apiURL = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
+		get apiURL() {
+			return _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
 		},
 
 		/**
@@ -403,11 +408,9 @@
 
 			const visibleSheet = spreadsheet?.sheets?.find?.(sheet => !sheet.properties?.hidden);
 
-			// Wrap the sheet title into single quotes since it might have spaces in it.
-			this.sheetAndRange = `'${visibleSheet?.properties?.title}'`;
-
-			// Rebuild apiURL using the new range.
-			this.apiURL = _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
+			// Why this.sheet in the right part of the assignment operator?
+			// If the sheet name is a result of an expression, we want to use it instead of the first visible sheet.
+			this.sheet = this.sheet ?? visibleSheet?.properties?.title;
 		},
 
 		oAuthParams: () => `&redirect_uri=${encodeURIComponent("https://auth.mavo.io")}&response_type=code&scope=${encodeURIComponent(_.scopes.join(" "))}`,
