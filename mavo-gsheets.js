@@ -107,6 +107,8 @@
 
 			// The request failed? It doesn't make sense to proceed.
 			if (!response.ok) {
+				const error = (await response.json()).error.message;
+
 				switch (response.status) {
 					case 400:
 						// Invalid sheet name and/or data range
@@ -120,9 +122,9 @@
 						// No spreadsheet
 						this.mavo.error(this.mavo._("mv-gsheets-spreadsheet-not-found"));
 						break;
-					default:
-						Mavo.warn(response.statusText);
 				}
+
+				Mavo.warn(error);
 
 				return null;
 			}
