@@ -317,6 +317,7 @@
 					else if (res.response.error?.message?.startsWith("Invalid values")) {
 						// An app's data structure is not supported
 						this.mavo.error(this.mavo._("mv-gsheets-unsupported-data-structure"));
+						Mavo.warn(res.response.error.message);
 					}
 					else {
 						// Unknown error
