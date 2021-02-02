@@ -110,7 +110,7 @@
 				switch (response.status) {
 					case 400:
 						// Invalid sheet name and/or data range
-						this.mavo.error(this.mavo._("mv-gsheets-no-sheet-or-invalid-range"));
+						Mavo.warn(this.mavo._("mv-gsheets-no-sheet-or-invalid-range"));
 						break;
 					case 403:
 						// No read permissions
