@@ -94,7 +94,7 @@
 				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
 			});
 
-			// Prefer an unauthenticated request. If it fails, try the authenticated one.
+			// Prefer an unauthenticated request. If it fails because of the lack of permissions, try the authenticated one.
 			let response = await fetch(url.href);
 
 			if (!response.ok && response.status === 403 && this.isAuthenticated()) {
