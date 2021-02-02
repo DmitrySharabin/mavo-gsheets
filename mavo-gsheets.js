@@ -97,7 +97,7 @@
 			// Prefer an unauthenticated request. If it fails, try the authenticated one.
 			let response = await fetch(url.href);
 
-			if (!response.ok && this.isAuthenticated()) {
+			if (!response.ok && response.status === 403 && this.isAuthenticated()) {
 				response = await fetch(url.href, {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
