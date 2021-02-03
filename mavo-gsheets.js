@@ -146,7 +146,7 @@
 			let [headings, ...data] = values;
 			this.recordsCount = data.length;
 
-			if (headings.some(h => !h?.trim?.()?.length)) {
+			if (headings.some(h => !h.trim?.()?.length)) {
 				// Not all data has headings. Warn an author.
 				Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headings"));
 
@@ -310,19 +310,19 @@
 
 				// Something went wrong?
 				if (res.response && res.status !== 200) {
-					if (res.response.error?.message?.startsWith("Unable to parse range")) {
+					if (res.response.error.message.startsWith("Unable to parse range")) {
 						// Invalid range
 						this.mavo.error(this.mavo._("mv-gsheets-invalid-range"));
 					}
-					else if (res.response.error?.message?.startsWith("Requested writing within range")) {
+					else if (res.response.error.message.startsWith("Requested writing within range")) {
 						// The range is too small
 						this.mavo.error(this.mavo._("mv-gsheets-small-range"));
 					}
-					else if (res.response.error?.message?.includes("protected cell or object")) {
+					else if (res.response.error.message.includes("protected cell or object")) {
 						// The sheet and/or range is protected
 						this.mavo.error(res.response.error.message);
 					}
-					else if (res.response.error?.message?.startsWith("Invalid values")) {
+					else if (res.response.error.message.startsWith("Invalid values")) {
 						// An app's data structure is not supported
 						this.mavo.error(this.mavo._("mv-gsheets-unsupported-data-structure"));
 						Mavo.warn(res.response.error.message);
@@ -408,7 +408,7 @@
 
 			const spreadsheet = await response.json();
 
-			const visibleSheet = spreadsheet?.sheets?.find?.(sheet => !sheet.properties?.hidden);
+			const visibleSheet = spreadsheet.sheets?.find?.(sheet => !sheet.properties?.hidden);
 
 			// Why this.sheet in the right part of the assignment operator?
 			// If the sheet name is a result of an expression, we want to use it instead of the title of the first visible sheet.
