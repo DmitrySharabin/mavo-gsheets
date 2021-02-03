@@ -99,15 +99,16 @@
 				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
 			});
 
-			// Prefer an unauthenticated request. If it fails because of the lack of permissions, try the authenticated one.
-			let response = await fetch(url.href);
-
-			if (!response.ok && response.status === 403 && this.isAuthenticated()) {
+			let response;
+			if (this.isAuthenticated()) {
 				response = await fetch(url.href, {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
 					},
 				});
+			}
+			else {
+				response = await fetch(url.href);
 			}
 
 			// The request failed? It doesn't make sense to proceed.
@@ -388,15 +389,16 @@
 		async findSheet() {
 			const url = _.buildURL(this.spreadsheet, { key: this.apikey });
 
-			// Prefer an unauthenticated request. If it fails because of the lack of permissions, try the authenticated one.
-			let response = await fetch(url.href);
-
-			if (!response.ok && response.status === 403 && this.isAuthenticated()) {
+			let response;
+			if (this.isAuthenticated()) {
 				response = await fetch(url.href, {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
 					},
 				});
+			}
+			else {
+				response = await fetch(url.href);
 			}
 
 			// The request failed? It doesn't make sense to proceed.
