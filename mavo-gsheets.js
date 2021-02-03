@@ -409,7 +409,7 @@
 			const visibleSheet = spreadsheet?.sheets?.find?.(sheet => !sheet.properties?.hidden);
 
 			// Why this.sheet in the right part of the assignment operator?
-			// If the sheet name is a result of an expression, we want to use it instead of the first visible sheet.
+			// If the sheet name is a result of an expression, we want to use it instead of the title of the first visible sheet.
 			this.sheet = this.sheet ?? visibleSheet?.properties?.title;
 		},
 
