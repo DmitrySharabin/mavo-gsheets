@@ -14,7 +14,7 @@
 	const _ = Mavo.Backend.register($.Class({
 		extends: Mavo.Backend,
 
-		id: "GSheets",
+		id: "Google Sheets",
 
 		constructor() {
 			this.permissions.on(["read", "edit", "add", "delete", "login"]);
