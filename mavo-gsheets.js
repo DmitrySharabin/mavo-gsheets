@@ -73,6 +73,9 @@
 		 * that's why we need to implement this method.
 		 */
 		async get() {
+			// Clean-up a bit: we don't want new data to be affected by previous loads.
+			delete this.rawData;
+
 			try {
 				if (this.sheetAndRange === "") {
 					await this.findSheet();
@@ -142,6 +145,11 @@
 				// There is no data to work with
 				return null;
 			}
+
+			// We need to store the raw response so that we can perform diff later.
+			// Why? Because Google Sheets has a built-in version history and we want to benefit from it.
+			// And if every time we overwrite the full data range, it makes the version history useless.
+			this.rawData = values;
 
 			let [headings, ...data] = values;
 			this.recordCount = data.length;
@@ -237,6 +245,22 @@
 			}
 
 			const recordCount = data.length - 1;
+
+			if (this.rawData?.length && recordCount > 0) {
+				// Perform diff with the source data.
+				// Since end-users can both remove and add data, we must stay inside the data set.
+				const rowCount = Math.min(this.rawData.length, data.length);
+				const colCount = Math.min(this.rawData[0].length, data[0].length);
+
+				for (let i = 0; i < rowCount; i++) {
+					for (let j = 0; j < colCount; j++) {
+						if (data[i][j] === this.rawData[i][j]) {
+							// The corresponding data won't be changed
+							data[i][j] = null;
+						}
+					}
+				}
+			}
 
 			// If we write back fewer records than we previously got, we need to remove the old data.
 			// The way we can do it is to provide records filled with empty strings.
