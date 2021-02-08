@@ -269,6 +269,14 @@
 				const colCount = Math.min(this.rawData[0].length, data[0].length);
 
 				for (let i = 0; i < rowCount; i++) {
+					if (data[i].length < colCount) {
+						// An end-user might have deleted some data in an app,
+						// and now we need to delete them in the spreadsheet as well.
+						// That's why we must add some empty values to the corresponding row of data
+						// because Mavo doesn't return values for “empty” properties.
+						data[i] = [...data[i], ...Array(colCount - data[i].length).fill("")];
+					}
+
 					for (let j = 0; j < colCount; j++) {
 						if (data[i][j] === this.rawData[i][j]) {
 							// The corresponding data won't be rewritten
