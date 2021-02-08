@@ -144,7 +144,7 @@
 			}
 
 			let [headings, ...data] = values;
-			this.recordsCount = data.length;
+			this.recordCount = data.length;
 
 			if (headings.some(h => !h.trim?.()?.length)) {
 				// Not all data has headings. Warn an author.
@@ -236,13 +236,13 @@
 				}
 			}
 
-			const recordsCount = data.length - 1;
+			const recordCount = data.length - 1;
 
 			// If we write back fewer records than we previously got, we need to remove the old data.
 			// The way we can do it is to provide records filled with empty strings.
-			if (recordsCount < this.recordsCount) {
+			if (recordCount < this.recordCount) {
 				const record = Array(data[0].length).fill(""); // ["", ..., ""] — empty row/column of data
-				const records = Array(this.recordsCount - recordsCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
+				const records = Array(this.recordCount - recordCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
 
 				data = data.concat(records);
 			}
@@ -337,7 +337,7 @@
 			};
 
 			// Saved successfully, update the field.
-			this.recordsCount = recordsCount;
+			this.recordCount = recordCount;
 
 			return res;
 		},
