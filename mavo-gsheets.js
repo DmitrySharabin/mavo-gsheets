@@ -255,7 +255,7 @@
 				for (let i = 0; i < rowCount; i++) {
 					for (let j = 0; j < colCount; j++) {
 						if (data[i][j] === this.rawData[i][j]) {
-							// The corresponding data won't be changed
+							// The corresponding data won't be rewritten
 							data[i][j] = null;
 						}
 					}
