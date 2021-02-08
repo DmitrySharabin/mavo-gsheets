@@ -196,26 +196,33 @@
 			}
 			else {
 				// There is a collection to work with
-				if (!data.length) {
-					// No data to store, but we must tell Mavo that they are.
-					return true;
+				if (data.length) {
+					// If there is data, transform it so that Google Sheets API could handle it.
+					let headings;
+
+					if ($.type(data[0]) === "object") {
+						// We have a complex collection
+						headings = Object.keys(data[0]);
+						data = data.map(d => Object.values(d));
+					}
+					else {
+						// We have a simple collection
+						headings = [collection];
+						data = data.map(d => [d]);
+					}
+
+					data = [headings, ...data];
 				}
-
-				// If there is data, transform it so that Google Sheets API could handle it.
-				let headings;
-
-				if ($.type(data[0]) === "object") {
-					// We have a complex collection
-					headings = Object.keys(data[0]);
-					data = data.map(d => Object.values(d));
+				else if (this.rawData?.length) {
+					// If there is no data to store, but previously we had one,
+					// we must delete them in the spreadsheet.
+					// To do that, we need to give the plugin a hint and it will do the rest.
+					data = [Array(this.rawData[0].length).fill("")]; // [ ["", ..., ""] ]
 				}
 				else {
-					// We have a simple collection
-					headings = [collection];
-					data = data.map(d => [d]);
+					// No data to store, no need to proceed.
+					return true;
 				}
-
-				data = [headings, ...data];
 			}
 
 			if (!data[0].length) {
@@ -246,7 +253,16 @@
 
 			const recordCount = data.length - 1;
 
-			if (this.rawData?.length && recordCount > 0) {
+			// If we write back fewer records than we previously got, we need to remove the old data.
+			// The way we can do it is to provide records filled with empty strings.
+			if (recordCount < this.recordCount) {
+				const record = Array(data[0].length).fill(""); // ["", ..., ""] — empty row/column of data
+				const records = Array(this.recordCount - recordCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
+
+				data = data.concat(records);
+			}
+
+			if (this.rawData?.length) {
 				// Perform diff with the source data.
 				// Since end-users can both remove and add data, we must stay inside the data set.
 				const rowCount = Math.min(this.rawData.length, data.length);
@@ -262,17 +278,12 @@
 				}
 			}
 
-			// If we write back fewer records than we previously got, we need to remove the old data.
-			// The way we can do it is to provide records filled with empty strings.
-			if (recordCount < this.recordCount) {
-				const record = Array(data[0].length).fill(""); // ["", ..., ""] — empty row/column of data
-				const records = Array(this.recordCount - recordCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
-
-				data = data.concat(records);
-			}
-
 			// Write the new data.
-			const url = _.buildURL(this.apiURL, { "valueInputOption": "raw" });
+			const url = _.buildURL(this.apiURL, {
+				"valueInputOption": "user_entered",
+				"responseValueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value",
+				"includeValuesInResponse": true
+			});
 			const body = {
 				"range": this.sheetAndRange,
 				"majorDimension": this.dataInColumns ? "columns" : "rows",
@@ -360,7 +371,8 @@
 				}
 			};
 
-			// Saved successfully, update the field.
+			// Saved successfully, update the fields.
+			this.rawData = res.updatedData.values;
 			this.recordCount = recordCount;
 
 			return res;
