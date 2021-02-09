@@ -9,7 +9,7 @@
 (($) => {
 	"use strict";
 
-	Mavo.Plugins.register("gsheets", {});
+	Mavo.Plugins.register("gsheets");
 
 	const _ = Mavo.Backend.register($.Class({
 		extends: Mavo.Backend,
