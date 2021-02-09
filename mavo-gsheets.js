@@ -187,23 +187,26 @@
 				// We might have a set of simple properties.
 
 				// Transform data so that Google Sheets API could handle it.
+				if (data.length) {
+					data = data[0];
+				}
+
 				data = [Object.keys(data), Object.values(data)];
 			}
 			else {
 				// There is a collection to work with
 				if (data.length) {
 					// If there is data, transform it so that Google Sheets API could handle it.
-					let headings;
+					let headings = Object.keys(this.mavo.root.children[collection].children[0].children ?? {});
 
-					if ($.type(data[0]) === "object") {
+					if (headings.length) {
 						// We have a complex collection
-						headings = Object.keys(data[0]);
 						data = data.map(d => Object.values(d));
 					}
 					else {
 						// We have a simple collection
 						headings = [collection];
-						data = data.map(d => [d]);
+						data = data.map(d => $.type(d) === "object" ? Object.values(d) : [d]);
 					}
 
 					data = [headings, ...data];
