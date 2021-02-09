@@ -8,6 +8,18 @@
 	<link rel="stylesheet" href="//test.mavo.io/style.css" />
 
 	<title>Google Sheets Backend Tests</title>
+	<style>
+		[data-test] td+td {
+			white-space: pre-line
+		}
+
+		[data-test][data-columns="3"] td:first-of-type,
+		[data-test][data-columns="3"] th:first-of-type {
+			word-wrap: break-word;
+			flex: none;
+			width: 20%;
+		}
+	</style>
 </head>
 
 <body>
@@ -15,7 +27,330 @@
 	<h1>Google Sheets Backend Tests</h1>
 
 	<section>
-		<!-- TODO: Add tests. -->
+		<h1>findSheet</h1>
+
+		<table class="reftest" data-test="testFindSheet" data-columns="2">
+			<tr mv-app="findsheet" mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing">
+				<td></td>
+				<td>In columns</td>
+			</tr>
+		</table>
+
+		<script>
+			function testFindSheet(actual, expected) {
+				try {
+					const row = actual.parentNode;
+					const m = Mavo.get(row);
+					const b = m.primaryBackend;
+					const sheet = b.sheet;
+
+					actual.textContent = sheet;
+
+					return expected.textContent == sheet;
+				} catch (e) {
+					console.error(e);
+					actual.textContent = "ERROR";
+					return false;
+				}
+			}
+		</script>
+	</section>
+
+	<section>
+		<h1>Metadata via attributes</h1>
+		<h2>Specifying params that are present in the URL</h2>
+
+		<table class="reftest" data-test="testParams" data-columns="3">
+			<thead>
+				<tr>
+					<th>URL</th>
+					<th>Actual</th>
+					<th>Expected</th>
+				</tr>
+			</thead>
+			<tr mv-app mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/1mHQMYriqxFnChVzY0Vamv2zkyW91If0LHDZ-PbEzFZA/edit?usp=sharing"
+				mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g">
+				<td></td>
+				<td>{
+					spreadsheet: "14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g",
+					sheet: "In columns"
+					}</td>
+			</tr>
+		</table>
+
+		<h2>Specifying params that <em>aren't</em> present in the URL</h2>
+		<table class="reftest" data-test="testParams" data-columns="3">
+			<thead>
+				<tr>
+					<th>URL</th>
+					<th>Actual</th>
+					<th>Expected</th>
+				</tr>
+			</thead>
+			<tr mv-app mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g/edit?usp=sharing"
+				mv-source-sheet="Todos" mv-source-range="A1:B3">
+				<td></td>
+				<td>{
+					"spreadsheet": "14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g",
+					"sheet": "Todos",
+					"range": "A1:B3"
+					}</td>
+			</tr>
+			<tr mv-app mv-bar="none" mv-source="https://docs.google.com/spreadsheets/"
+				mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g" mv-source-sheet="Todos">
+				<td></td>
+				<td>{
+					"spreadsheet": "14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g",
+					"sheet": "Todos"
+					}</td>
+			</tr>
+			<tr mv-app mv-bar="none" mv-source="https://docs.google.com/spreadsheets/"
+				mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g" mv-source-range="1:2">
+				<td></td>
+				<td>{
+					"spreadsheet": "14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g",
+					"range": "1:2"
+					}</td>
+			</tr>
+			<tr mv-app mv-bar="none" mv-source="https://docs.google.com/spreadsheets/"
+				mv-source-spreadsheet="14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g" mv-source-sheet="Todos"
+				mv-source-range="A1:B3">
+				<td></td>
+				<td>{
+					"spreadsheet": "14bzCuziKutrA3iESarKoj2o56dhraR8pzuFAuwTIo-g",
+					"sheet": "Todos",
+					"range": "A1:B3"
+					}</td>
+			</tr>
+		</table>
+
+		<script>
+			function testParams(url, actual, expected) {
+				try {
+					const props = [
+						"spreadsheet",
+						"sheet",
+						"range"
+					];
+
+					const row = actual.parentNode;
+					const m = Mavo.get(row);
+					const b = m.primaryBackend;
+
+					// Add a title to the row so we could see what params were specified.
+					const o = Object.keys(b.options).filter(o => !["format", "mavo"].includes(o));
+					row.title = o.join(", ");
+
+					const r = {};
+					props.forEach(p => {
+						if (b[p]) {
+							r[p] = b[p];
+						}
+					});
+
+					url.textContent = b.source;
+					actual.textContent = Mavo.toJSON(r);
+
+					eval("var exp = " + expected.textContent);
+
+					return Test.equals(r, exp);
+				} catch (e) {
+					console.error(e);
+					actual.textContent = "ERROR";
+					return false;
+				}
+			}
+		</script>
+	</section>
+
+	<section mv-app="basic" mv-bar="none"
+		mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing">
+		<h1>Basic</h1>
+
+		<table class="reftest">
+			<tr>
+				<td>
+					<ul>
+						<li mv-multiple>
+							<span property="code">Code</span>
+							<span property="name">Name</span>
+						</li>
+					</ul>
+				</td>
+				<td>
+					<ul>
+						<li>ru Russia</li>
+						<li>gr Greece</li>
+						<li>us USA</li>
+					</ul>
+				</td>
+			</tr>
+		</table>
+	</section>
+
+	<section>
+		<h1>Dynamic</h1>
+
+		<table class="reftest" data-click="input[property=flip] wait .1s after mv-load">
+			<tr>
+				<td mv-app="dynamic" mv-bar="none"
+					mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+					mv-source-sheet="Dynamic" mv-source-range="[if(flip, 'C9:D11' , 'A1:B4')]">
+					<div class="test-content-ignore">
+						<input type="checkbox" property="flip"> Check me
+					</div>
+					<ul>
+						<li property="country" mv-multiple>
+							<span property="code">Code</span>
+							<span property="name">Name</span>
+						</li>
+					</ul>
+				</td>
+				<td>
+					<ul>
+						<li>fr France</li>
+						<li>jp Japan</li>
+					</ul>
+				</td>
+			</tr>
+		</table>
+	</section>
+
+	<section>
+		<h1>With Options</h1>
+
+		<table class="reftest">
+			<tr title="dataInColumns" mv-app="dataincolumns" mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+				mv-source-sheet="Options" mv-source-range="2:3" mv-source-options="dataInColumns">
+				<td>
+					<ul>
+						<li mv-multiple>
+							<span property="code">Code</span>
+							<span property="name">Name</span>
+						</li>
+					</ul>
+				</td>
+				<td>
+					<ul>
+						<li>fr France</li>
+						<li>jp Japan</li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr title="transformHeadings" mv-app="transformheadings" mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+				mv-source-sheet="Options" mv-source-range="A6:B9" mv-source-options="transformHeadings">
+				<td>
+					<ul>
+						<li mv-multiple>
+							<span property="code">Code</span>
+							<span property="country-name">Name</span>
+						</li>
+					</ul>
+				</td>
+				<td>
+					<ul>
+						<li>ru Russia</li>
+						<li>gr Greece</li>
+						<li>us USA</li>
+					</ul>
+				</td>
+			</tr>
+
+			<tr title="formattedValues" mv-app="formattedvalues" mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+				mv-source-sheet="Options" mv-source-range="D6:D9" mv-source-options="formattedValues">
+				<td>
+					<ul>
+						<li mv-multiple>
+							<span property="value">Value</span>
+						</li>
+					</ul>
+				</td>
+				<td>
+					<ul>
+						<li>42.00</li>
+						<li>5/13/1983 16:15:00</li>
+						<li>(42.00)</li>
+					</ul>
+				</td>
+			</tr>
+		</table>
+	</section>
+
+	<section>
+		<h1>Some Edge Cases</h1>
+
+		<table class="reftest">
+			<tr title="A set of simple properties" mv-app="simpleproperties" mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+				mv-source-sheet="Edge cases" mv-source-range="A2:C3">
+				<td>
+					<span property="prop1">Prop1</span>
+					<span property="prop2">Prop2</span>
+					<span property="prop3">Prop3</span>
+				</td>
+				<td>
+					Mavo is awesome!
+				</td>
+			</tr>
+
+			<tr title="Explicit collection" mv-app="explicitcollection" mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+				mv-source-sheet="Edge cases" mv-source-range="A6:A9">
+				<td>
+					<span property="word">Word1</span>
+					<span property="word">Word2</span>
+					<span property="word">Word3</span>
+				</td>
+				<td>
+					FooBarBaz
+				</td>
+			</tr>
+
+			<tr title="Mixed collection" mv-app="mixedcollection" mv-bar="none"
+				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+				mv-source-sheet="Edge cases" mv-source-range="A6:A9">
+				<td>
+					<span property="word">Word</span>
+					<span property="word" mv-multiple>Word</span>
+				</td>
+				<td>
+					FooBarBaz
+				</td>
+			</tr>
+		</table>
+	</section>
+
+	<section mv-app="privatespreadsheet"
+		mv-source="https://docs.google.com/spreadsheets/d/1mHQMYriqxFnChVzY0Vamv2zkyW91If0LHDZ-PbEzFZA/edit#gid=765328876"
+		mv-source-range="A1:B4">
+		<h1>Private Spreadsheet</h1>
+		<p>Need to login to Google Sheets and have access to the spreadsheet for this test to pass.</p>
+
+		<table class="reftest">
+			<tr>
+				<td>
+					<ul>
+						<li mv-multiple>
+							<span property="taskTitle">Task</span>
+						</li>
+					</ul>
+				</td>
+				<td>
+					<ul>
+						<li>Code furiously</li>
+						<li>Promote Mavo</li>
+						<li>Give talks</li>
+					</ul>
+				</td>
+			</tr>
+		</table>
 	</section>
 
 	<script src="//get.mavo.io/mavo.js"></script>
