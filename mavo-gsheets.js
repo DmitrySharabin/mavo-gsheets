@@ -73,9 +73,6 @@
 		 * that's why we need to implement this method.
 		 */
 		async get() {
-			// Clean-up a bit: we don't want new data to be affected by previous loads.
-			delete this.loadedData;
-
 			try {
 				if (this.sheetAndRange === "") {
 					await this.findSheet();
@@ -260,30 +257,6 @@
 				const records = Array(this.recordCount - recordCount).fill(record); // [ ["", ..., ""], ["", ..., ""], ..., ["", ..., ""] ]
 
 				data = data.concat(records);
-			}
-
-			if (this.loadedData?.length) {
-				// Perform diff with the source data.
-				// Since end-users can both remove and add data, we must stay inside the data set.
-				const rowCount = Math.min(this.loadedData.length, data.length);
-				const colCount = Math.min(this.loadedData[0].length, data[0].length);
-
-				for (let i = 0; i < rowCount; i++) {
-					if (data[i].length < colCount) {
-						// An end-user might have deleted some data in an app,
-						// and now we need to delete them in the spreadsheet as well.
-						// That's why we must add some empty values to the corresponding row of data
-						// because Mavo doesn't return values for “empty” properties.
-						data[i] = [...data[i], ...Array(colCount - data[i].length).fill("")];
-					}
-
-					for (let j = 0; j < colCount; j++) {
-						if (data[i][j] === this.loadedData[i][j]) {
-							// The corresponding data won't be rewritten
-							data[i][j] = null;
-						}
-					}
-				}
 			}
 
 			// Write the new data.
