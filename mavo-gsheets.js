@@ -134,8 +134,7 @@
 				return null;
 			}
 
-			const json = await response.json();
-			const values = json.values;
+			const values = (await response.json()).values;
 
 			if (!values) {
 				// There is no data to work with
