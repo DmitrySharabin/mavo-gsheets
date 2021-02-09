@@ -74,7 +74,7 @@
 		 */
 		async get() {
 			// Clean-up a bit: we don't want new data to be affected by previous loads.
-			delete this.rawData;
+			delete this.loadedData;
 
 			try {
 				if (this.sheetAndRange === "") {
@@ -146,10 +146,10 @@
 				return null;
 			}
 
-			// We need to store the raw response so that we can perform diff later.
+			// We need to store the loaded data so that we can perform diff later.
 			// Why? Because Google Sheets has a built-in version history and we want to benefit from it.
 			// And if every time we overwrite the full data range, it makes the version history useless.
-			this.rawData = values;
+			this.loadedData = values;
 
 			let [headings, ...data] = values;
 			this.recordCount = data.length;
@@ -213,11 +213,11 @@
 
 					data = [headings, ...data];
 				}
-				else if (this.rawData?.length) {
+				else if (this.loadedData?.length) {
 					// If there is no data to store, but previously we had one,
 					// we must delete them in the spreadsheet.
 					// To do that, we need to give the plugin a hint and it will do the rest.
-					data = [Array(this.rawData[0].length).fill("")]; // [ ["", ..., ""] ]
+					data = [Array(this.loadedData[0].length).fill("")]; // [ ["", ..., ""] ]
 				}
 				else {
 					// No data to store, no need to proceed.
@@ -262,11 +262,11 @@
 				data = data.concat(records);
 			}
 
-			if (this.rawData?.length) {
+			if (this.loadedData?.length) {
 				// Perform diff with the source data.
 				// Since end-users can both remove and add data, we must stay inside the data set.
-				const rowCount = Math.min(this.rawData.length, data.length);
-				const colCount = Math.min(this.rawData[0].length, data[0].length);
+				const rowCount = Math.min(this.loadedData.length, data.length);
+				const colCount = Math.min(this.loadedData[0].length, data[0].length);
 
 				for (let i = 0; i < rowCount; i++) {
 					if (data[i].length < colCount) {
@@ -278,7 +278,7 @@
 					}
 
 					for (let j = 0; j < colCount; j++) {
-						if (data[i][j] === this.rawData[i][j]) {
+						if (data[i][j] === this.loadedData[i][j]) {
 							// The corresponding data won't be rewritten
 							data[i][j] = null;
 						}
@@ -380,7 +380,7 @@
 			};
 
 			// Saved successfully, update the fields.
-			this.rawData = res.updatedData.values;
+			this.loadedData = res.updatedData.values;
 			this.recordCount = recordCount;
 
 			return res;
