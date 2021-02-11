@@ -31,6 +31,7 @@ The plugin supports *private spreadsheets* as well. However, to read data from a
 | `spreadsheet` | (*Optional*) A spreadsheet id. The value between the `/d/` and the `/edit` in the URL of a spreadsheet. By specifying this value, you can redefine the spreadsheet id the plugin got from the provided spreadsheet URL. In other words, you'll be able to work with another spreadsheet. |
 
 **Note:** We recommend providing either *sheet title* or *range* to avoid extra network requests.
+
 ## A1 notation for specifying cell ranges
 
 This is a string like `A1:B2` that refers to a group of cells in the sheet (the first visible sheet) and is typically used in formulas. For example, valid ranges are:
