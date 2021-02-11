@@ -56,7 +56,7 @@ The plugin supports a number of options for customizing the way it reads/writes 
 |--------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | `formattedValues`  | Determines whether values should be displayed according to the cell's formatting on the sheet (if this option is provided) or not. |
 | `dataInColumns`    | If provided, that indicates that data is organized on the specified sheet in columns.                                              |
-| `transformHeadings` | If provided, the plugin will convert headings to something that looks like the ids so that they could be used as property names. Uses the built-in MavoScript function [`idify()`](https://mavo.io/docs/functions/#idify) under the hood.   |
+| `transformHeadings` | If provided, the plugin will convert headings so that they can be used as property names: will convert accented letters to [ASCII](https://en.wikipedia.org/wiki/ASCII), all the letters to lowercase, etc. **Hyphens and spaces will be converted into underscores.**   |
 
 ### Localization strings
 
