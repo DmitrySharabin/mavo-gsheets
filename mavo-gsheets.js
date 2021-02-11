@@ -167,7 +167,14 @@
 			}
 
 			// Assign data to corresponding properties.
-			data = data.map(d => _.zipObject(headings, d));
+			if (headings.length === 1) {
+				// We have a collection of primitives
+				data = { [headings[0]]: data.flat() };
+			}
+			else {
+				// We have a collection of groups
+				data = data.map(d => _.zipObject(headings, d));
+			}
 
 			return data;
 		},
