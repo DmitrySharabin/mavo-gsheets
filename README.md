@@ -6,12 +6,13 @@
 
 ## Restrictions
 
-Data must have headings:
+1. Data must have headings:
 
 - in the *first row of the specified range*, if data is organized in rows
 - otherwise, in the *first column*.
 
-Only one collection. Property names inside the collection must correspond to headings in a spreadsheet, or the `transformHeadings` option must be provided in the `mv-storage-options` attribute.
+2. Only one collection. If there is more, only the *first* one will be taken into account.
+3. Property names inside the collection must correspond to headings in a spreadsheet that must contain **only** letters, numbers, and underscores (_). Otherwise, the `transformHeadings` option must be provided in the `mv-storage-options` attribute.
 
 ## Setting Up
 
