@@ -161,8 +161,9 @@
 			}
 
 			// If needed, fix headings so we can use them as property names.
+			// To let them be used in expressions, we also must replace dashes with underscores.
 			if (this.transformHeadings) {
-				headings = headings.map(heading => Mavo.Functions.idify(heading));
+				headings = headings.map(heading => Mavo.Functions.idify(heading).replace(/\-/g, "_"));
 			}
 
 			// Assign data to corresponding properties.
