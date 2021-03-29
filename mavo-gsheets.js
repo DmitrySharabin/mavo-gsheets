@@ -99,15 +99,23 @@
 				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value"
 			});
 
-			// Prefer an unauthenticated request. If it fails because of the lack of permissions, try the authenticated one.
-			let response = await fetch(url.href);
-
-			if (!response.ok && response.status === 403 && this.isAuthenticated()) {
+			let response;
+			if (this.isAuthenticated()) {
 				response = await fetch(url.href, {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
 					},
 				});
+
+				if (response.status === 401) {
+					// Access token we have is invalid, discard it.
+					// But we can still try an unauthenticated request.
+					await this.logout();
+				}
+			}
+
+			if (!this.isAuthenticated()) {
+				response = await fetch(url.href);
 			}
 
 			// The request failed? It doesn't make sense to proceed.
@@ -238,9 +246,13 @@
 
 			if (this.sheetAndRange === "") {
 				try {
-					await this.findSheet();
+					await this.findSheet({ isStoring: true });
 				} catch (e) {
 					switch (e.status) {
+						case 401:
+							// Unauthorized
+							this.mavo.error(this.mavo._("mv-gsheets-login-to-proceed"));
+							break;
 						case 403:
 							// No write permissions
 							this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
@@ -285,6 +297,10 @@
 				res = await this.request(url, body, "PUT");
 			} catch (e) {
 				switch (e.status) {
+					case 401:
+						// Unauthorized
+						this.mavo.error(this.mavo._("mv-gsheets-login-to-proceed"));
+						return true;
 					case 403:
 						// No write permissions
 						this.mavo.error(this.mavo._("mv-gsheets-write-permission-denied"));
@@ -379,7 +395,7 @@
 			} catch (e) {
 				if (e.status === 401) {
 					// Unauthorized. Access token we have is invalid, discard it.
-					this.logout();
+					await this.logout();
 				}
 			}
 		},
@@ -412,18 +428,26 @@
 		 * Otherwise, a request to a spreadsheet will fail, and we don't want it.
 		 * Let's use all cells of the first visible sheet by default. To do that, we need to provide its title.
 		 */
-		async findSheet() {
+		async findSheet(o = {}) {
 			const url = _.buildURL(this.spreadsheet, { key: this.apikey });
 
-			// Prefer an unauthenticated request. If it fails because of the lack of permissions, try the authenticated one.
-			let response = await fetch(url.href);
-
-			if (!response.ok && response.status === 403 && this.isAuthenticated()) {
+			let response;
+			if (this.isAuthenticated()) {
 				response = await fetch(url.href, {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
 					},
 				});
+
+				if (response.status === 401) {
+					// Access token we have is invalid, discard it.
+					// But in case we are getting data, we can still try an unauthenticated request.
+					await this.logout();
+				}
+			}
+
+			if (!o.isStoring && !this.isAuthenticated()) {
+				response = await fetch(url.href);
 			}
 
 			// The request failed? It doesn't make sense to proceed.
@@ -502,6 +526,7 @@
 	Mavo.Locale.register("en", {
 		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
 		"mv-gsheets-empty-cells-in-headings": "It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.",
+		"mv-gsheets-login-to-proceed": "You must be logged in to save data to the spreadsheet. Re-login and try again.",
 		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet.",
 		"mv-gsheets-read-permission-denied": "You don't have permission to read data from the spreadsheet.",
 		"mv-gsheets-unsupported-data-structure": "It looks like your app's data has a structure that is not supported by the GSheets plugin.",
