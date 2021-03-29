@@ -68,9 +68,6 @@
 
 		/**
 		 * Low-level function for reading data.
-		 *
-		 * Mavo.Backend#get() adds the timestamp parameter, and the request to the server returns 400;
-		 * that's why we need to implement this method.
 		 */
 		async get() {
 			try {
