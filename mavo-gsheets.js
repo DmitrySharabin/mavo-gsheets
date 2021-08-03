@@ -11,21 +11,21 @@
 
 	Mavo.Plugins.register("gsheets");
 
-	const _ = Mavo.Backend.register($.Class({
-		extends: Mavo.Backend,
+	const _ = Mavo.Backend.register(class GSheets extends Mavo.Backend {
+		id = "Google Sheets"
 
-		id: "Google Sheets",
+		constructor (url, o) {
+			super(url, o);
 
-		constructor() {
 			this.permissions.on(["read", "edit", "add", "delete", "login"]);
 
 			// Since we need an access token to write data back to a spreadsheet,
 			// let's check whether we already have one.
 			this.login(true);
-		},
+		}
 
-		update(url, o) {
-			this.super.update.call(this, url, o);
+		update (url, o) {
+			super.update(url, o);
 
 			/**
 			 * @property {string} apikey — The API key for unauthenticated GET requests. It's safe for embedding in URLs; it doesn't need any encoding.
@@ -48,10 +48,10 @@
 			if (o.options) {
 				Object.assign(this, Mavo.options(o.options));
 			}
-		},
+		}
 
 		// Define computed properties
-		get sheetAndRange() {
+		get sheetAndRange () {
 			/**
 			 * Since sheet title and cells range are optional, we need to cover all the possible cases:
 			 *
@@ -60,16 +60,16 @@
 			 * – Range
 			 */
 			return `${this.sheet ? `'${this.sheet}'` : ""}${this.range ? (this.sheet ? `!${this.range}` : this.range) : ""}`
-		},
+		}
 
-		get apiURL() {
+		get apiURL () {
 			return _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
-		},
+		}
 
 		/**
 		 * Low-level function for reading data.
 		 */
-		async get() {
+		async get () {
 			try {
 				if (this.sheetAndRange === "") {
 					await this.findSheet();
@@ -182,12 +182,12 @@
 			}
 
 			return data;
-		},
+		}
 
 		/**
 		 * High level function for storing data.
 		 */
-		async store(data) {
+		async store (data) {
 			// Get the name of the first property that is a collection without mv-value.
 			const collection = this.mavo.root.getNames((_, n) => {
 				return (n instanceof Mavo.Collection || n instanceof Mavo.ImplicitCollection) && !n.expressions?.[0]?.isDynamicObject;
@@ -379,9 +379,9 @@
 			this.recordCount = recordCount;
 
 			return res;
-		},
+		}
 
-		async login(passive) {
+		async login (passive) {
 			try {
 				await this.oAuthenticate(passive);
 				await this.getUser();
@@ -395,16 +395,16 @@
 					await this.logout();
 				}
 			}
-		},
+		}
 
-		async logout() {
+		async logout () {
 			await this.oAuthLogout();
 
 			this.user = null;
 			this.permissions.on(["edit", "add", "delete"]);
-		},
+		}
 
-		async getUser() {
+		async getUser () {
 			if (this.user) {
 				return this.user;
 			}
@@ -425,14 +425,14 @@
 				// Mavo v0.2.4-
 				$.fire(this.mavo.element, "mv-login", { backend: this });
 			}
-		},
+		}
 
 		/**
 		 * If neither sheet title nor range is provided, we should use some default range to get/read data from/to.
 		 * Otherwise, a request to a spreadsheet will fail, and we don't want it.
 		 * Let's use all cells of the first visible sheet by default. To do that, we need to provide its title.
 		 */
-		async findSheet(o = {}) {
+		async findSheet (o = {}) {
 			const url = _.buildURL(this.spreadsheet, { key: this.apikey });
 
 			let response;
@@ -466,66 +466,66 @@
 			// Why this.sheet in the right part of the assignment operator?
 			// If the sheet name is a result of an expression, we want to use it instead of the title of the first visible sheet.
 			this.sheet = this.sheet ?? visibleSheet?.properties?.title;
-		},
+		}
 
-		oAuthParams: () => `&redirect_uri=${encodeURIComponent("https://auth.mavo.io")}&response_type=code&scope=${encodeURIComponent(_.scopes.join(" "))}`,
+		oAuthParams = () => `&redirect_uri=${encodeURIComponent("https://auth.mavo.io")}&response_type=code&scope=${encodeURIComponent(_.scopes.join(" "))}`
 
-		static: {
-			apiDomain: "https://sheets.googleapis.com/v4/spreadsheets/",
-			oAuth: "https://accounts.google.com/o/oauth2/auth",
-			scopes: [
-				"https://www.googleapis.com/auth/spreadsheets",
-				"https://www.googleapis.com/auth/userinfo.profile"
-			],
-			key: "380712995757-4e9augrln1ck0soj8qgou0b4tnr30o42.apps.googleusercontent.com", // Client ID for PUT requests
-			useCache: false, // We don't want to set the timestamp on all requests
+		static apiDomain = "https://sheets.googleapis.com/v4/spreadsheets/"
+		static oAuth = "https://accounts.google.com/o/oauth2/auth"
+		static scopes = [
+			"https://www.googleapis.com/auth/spreadsheets",
+			"https://www.googleapis.com/auth/userinfo.profile"
+		]
+		static key = "380712995757-4e9augrln1ck0soj8qgou0b4tnr30o42.apps.googleusercontent.com" // Client ID for PUT requests
+		static useCache = false // We don't want to set the timestamp on all requests
 
-			/**
-			 * Determines whether the Google Sheets backend is used.
-			 * @param {string} value The mv-storage/mv-source/mv-init value.
-			 */
-			test: function (value) {
-				return /^https:\/\/docs.google.com\/spreadsheets\/?.*/.test(value);
-			},
+		/**
+		 * Determines whether the Google Sheets backend is used.
+		 * @param {string} value The mv-storage/mv-source/mv-init value.
+		 */
+		static test (value) {
+			return /^https:\/\/docs.google.com\/spreadsheets\/?.*/.test(value);
+		}
 
-			/**
-			 * Pairing elements in two arrays into a JavaScript object by key and value.
-			 * @param {array} props Array of keys.
-			 * @param {array} values Array of values.
-			 *
-			 * @example
-			 * // returns { a: 1, b: 2, c: 3 }
-			 * zipObject(["a", "b", "c"], [1, 2, 3]);
-			 *
-			 * @see {@link https://lowrey.me/lodash-zipobject-in-es6-javascript/}
-			 */
-			zipObject: function (props, values) {
-				return props.reduce((prev, prop, i) => {
-					// Skip empty property names (and corresponding data) since they are useless.
-					if (!prop.trim?.()?.length) {
-						return prev;
-					}
-
-					return Object.assign(prev, { [prop]: values[i] });
-				}, {});
-			},
-
-			/**
-			 * Returns a newly created URL object with provided as an argument query parameters.
-			 * @param {string} url Relative URL.
-			 * @param {object} params Query parameters.
-			 */
-			buildURL(url, params = {}) {
-				const ret = new URL(url, _.apiDomain);
-
-				for (const p in params) {
-					ret.searchParams.set(p, params[p]);
+		/**
+		 * Pairing elements in two arrays into a JavaScript object by key and value.
+		 * @param {array} props Array of keys.
+		 * @param {array} values Array of values.
+		 *
+		 * @example
+		 * // returns { a: 1, b: 2, c: 3 }
+		 * zipObject(["a", "b", "c"], [1, 2, 3]);
+		 *
+		 * @see {@link https://lowrey.me/lodash-zipobject-in-es6-javascript/}
+		 */
+		static zipObject (props, values) {
+			return props.reduce((prev, prop, i) => {
+				// Skip empty property names (and corresponding data) since they are useless.
+				if (!prop.trim?.()?.length) {
+					return prev;
 				}
 
-				return ret;
-			}
+				return Object.assign(prev, {
+					[prop]: values[i]
+				});
+			}, {});
 		}
-	}));
+
+		/**
+		 * Returns a newly created URL object with provided as an argument query parameters.
+		 * @param {string} url Relative URL.
+		 * @param {object} params Query parameters.
+		 */
+		static buildURL (url, params = {}) {
+			const ret = new URL(url, _.apiDomain);
+
+			for (const p in params) {
+				ret.searchParams.set(p, params[p]);
+			}
+
+			return ret;
+		}
+	});
 
 	Mavo.Locale.register("en", {
 		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
@@ -540,4 +540,4 @@
 		"mv-gsheets-no-sheet-to-store-data": "We couldn't find the {name} sheet in the spreadsheet and created it.",
 		"mv-gsheets-small-range": "The range you specified isn't large enough to store all your data."
 	});
-})(Bliss)
+})(Bliss);
