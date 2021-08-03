@@ -417,7 +417,14 @@
 				info
 			};
 
-			$.fire(this.mavo.element, "mv-login", { backend: this });
+			// Make the plugin work both with stable and future versions of Mavo.
+			if (this instanceof EventTarget) {
+				$.fire(this, "mv-login");
+			}
+			else {
+				// Mavo v0.2.4-
+				$.fire(this.mavo.element, "mv-login", { backend: this });
+			}
 		},
 
 		/**
