@@ -54,7 +54,8 @@ The plugin supports a number of options for customizing the way it reads/writes 
 
 | Option             | Description                                                                                                                        |
 |--------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `formattedValues`  | Determines whether values should be displayed according to the cell's formatting on the sheet (if this option is provided) or not. |
+| `formattedValues`  | Determines whether values should be displayed according to the cell's formatting on the sheet (if this option is provided) or not. **Date, time, date with time, and duration by default will be output according to the cell's formatting regardless of whether this option is provided or not.** |
+| `dateTimeAsNumber`  | If provided, date, time, date with time, and duration will be displayed as numbers regardless of their formatting on the sheet. This option will be ignored if `formattedValues` is provided. |
 | `dataInColumns`    | If provided, that indicates that data is organized on the specified sheet in columns.                                              |
 | `transformHeadings` | If provided, the plugin will convert headings so that they can be used as property names: will convert accented letters to [ASCII](https://en.wikipedia.org/wiki/ASCII), all the letters to lowercase, etc. **Hyphens and spaces will be converted into underscores.**   |
 
