@@ -184,7 +184,7 @@
 					ret.push(value);
 				});
 
-				if (ret) {
+				if (ret.length) {
 					values.push(ret);
 				}
 			});
