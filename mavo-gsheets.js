@@ -9,7 +9,25 @@
 (($) => {
 	"use strict";
 
-	Mavo.Plugins.register("gsheets");
+	Mavo.Plugins.register("gsheets", {
+		hooks: {
+			"node-getdata-end": function (env) {
+				if (this instanceof Mavo.Primitive && this.dateType) {
+					// Convert dates to serial numbers.
+
+					if (!env.data.includes("-")) {
+						// We have only time, so we need to add it to the current date.
+						env.data = `${new Date().toISOString().split("T")[0]}T${env.data}`
+					}
+
+					let timezoneOffset = env.data.includes("T") ? Mavo.Functions.localTimezone * Mavo.Functions.minutes() : 0;
+					const date = new Date(env.data);
+
+					env.data = 25569 + (date.getTime() + timezoneOffset) / Mavo.Functions.days();
+				}
+			}
+		}
+	});
 
 	const _ = Mavo.Backend.register(class GSheets extends Mavo.Backend {
 		id = "Google Sheets"
@@ -260,7 +278,7 @@
 					// If there is data, transform it so that Google Sheets API could handle it.
 					let headings = Object.keys(this.mavo.root.children[collection].children[0].children ?? {});
 
-					if (headings.length) {
+					if (headings.length > 1) {
 						// We have a complex collection
 						data = data.map(d => Object.values(d));
 					}
