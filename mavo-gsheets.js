@@ -64,7 +64,7 @@
 		}
 
 		get apiURL () {
-			return _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
+			return _.buildURL(this.spreadsheet, { key: this.apikey, ranges: [this.sheetAndRange], includeGridData: true });
 		}
 
 		/**
@@ -92,11 +92,7 @@
 				return null;
 			}
 
-			const url = _.buildURL(this.apiURL, {
-				"majorDimension": this.dataInColumns ? "columns" : "rows",
-				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value",
-				"dateTimeRenderOption": this.dateTimeAsNumber ? "serial_number" : "formatted_string"
-			});
+			const url = this.apiURL;
 
 			let response;
 			if (this.isAuthenticated()) {
@@ -141,7 +137,57 @@
 				return null;
 			}
 
-			const values = (await response.json()).values;
+			let rawValues = (await response.json()).sheets[0].data[0].rowData.map(r => r.values);
+			if (this.dataInColumns) {
+				// Transpose the array with data (https://stackoverflow.com/questions/17428587/transposing-a-2d-array-in-javascript)
+				rawValues = rawValues[0].map((_, colIndex) => rawValues.map(row => row[colIndex]));
+			}
+
+			const values = [];
+			rawValues.forEach(row => {
+				const ret = [];
+
+				row.forEach(cell => {
+					let value;
+
+					if (!cell.effectiveValue) {
+						// We have an empty cell that was touched (might be formatted) in the past, so, for now, we must ignore it.
+						return;
+					}
+
+					if (this.formattedValues) {
+						value = cell.formattedValue;
+					}
+					else {
+						value = cell.effectiveValue["stringValue"] ?? cell.effectiveValue["numberValue"] ?? cell.effectiveValue["boolValue"];
+
+						// Do we have date/time/date and time?
+						if (cell.effectiveFormat.numberFormat) {
+							const type = cell.effectiveFormat.numberFormat.type;
+
+							if (["DATE", "TIME", "DATE_TIME"].includes(type)) {
+								// Convert serial number to ms.
+								const timezoneOffset = Mavo.Functions.localTimezone * Mavo.Functions.minutes();
+
+								if (type === "TIME") {
+									value = Mavo.Functions.time(value * Mavo.Functions.days() - timezoneOffset, "seconds");
+								}
+								else {
+									// See https://gist.github.com/christopherscott/2782634
+									value = (value - 25569) * Mavo.Functions.days();
+									value = type === "DATE" ? Mavo.Functions.date(value) : Mavo.Functions.datetime(value - timezoneOffset, "seconds");
+								}
+							}
+						}
+					}
+
+					ret.push(value);
+				});
+
+				if (ret) {
+					values.push(ret);
+				}
+			});
 
 			if (!values) {
 				// There is no data to work with
