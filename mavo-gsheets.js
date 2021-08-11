@@ -60,7 +60,6 @@
 			 * Supported backend-specific options:
 			 *
 			 * formattedValues — Determines whether values should be displayed according to the cell's formatting on the sheet (if true) or not (if false).
-			 * dateTimeAsNumber — If true, date, time, datetime, and duration fields will be output as doubles. Not strings in their given number format (which is dependent on the spreadsheet locale).
 			 * dataInColumns — If true, indicates that data is organized on the specified sheet in columns.
 			 * transformHeadings — If true, convert headings to something that looks like the ids so that they could be used as property names.
 			 */
