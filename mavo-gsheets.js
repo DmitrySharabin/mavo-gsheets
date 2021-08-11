@@ -64,7 +64,7 @@
 		}
 
 		get apiURL () {
-			return _.buildURL(this.spreadsheet, { key: this.apikey, ranges: [this.sheetAndRange], includeGridData: true });
+			return _.buildURL(`${this.spreadsheet}/values/${this.sheetAndRange}`, { key: this.apikey });
 		}
 
 		/**
@@ -92,7 +92,7 @@
 				return null;
 			}
 
-			const url = this.apiURL;
+			const url = _.buildURL(this.spreadsheet, { key: this.apikey, ranges: [this.sheetAndRange], includeGridData: true });;
 
 			let response;
 			if (this.isAuthenticated()) {
