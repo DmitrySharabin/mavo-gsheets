@@ -185,14 +185,21 @@
 							if (["DATE", "TIME", "DATE_TIME"].includes(type)) {
 								// Convert serial number to ms.
 								const timezoneOffset = $f.localTimezone * $f.minutes();
+								const date = $f.date((value - 25569) * $f.days());
+								const time = $f.time((value - Math.trunc(value)) * $f.days() - timezoneOffset, "seconds");
 
-								if (type === "TIME") {
-									value = $f.time(value * $f.days() - timezoneOffset, "seconds");
-								}
-								else {
-									// See https://gist.github.com/christopherscott/2782634
-									value = (value - 25569) * $f.days();
-									value = type === "DATE" ? $f.date(value) : $f.datetime(value - timezoneOffset, "seconds");
+								switch (type) {
+									case "DATE":
+										value = date;
+										break;
+
+									case "TIME":
+										value = time;
+										break;
+
+									case "DATE_TIME":
+										value = `${date}T${time}`;
+										break;
 								}
 							}
 						}
