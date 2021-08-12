@@ -6,7 +6,7 @@
  * @version %%VERSION%%
  */
 
-(($) => {
+(($, $f) => {
 	"use strict";
 
 	Mavo.Plugins.register("gsheets", {
@@ -20,10 +20,10 @@
 						env.data = `${new Date().toISOString().split("T")[0]}T${env.data}`
 					}
 
-					let timezoneOffset = env.data.includes("T") ? Mavo.Functions.localTimezone * Mavo.Functions.minutes() : 0;
+					let timezoneOffset = env.data.includes("T") ? $f.localTimezone * $f.minutes() : 0;
 					const date = new Date(env.data);
 
-					env.data = 25569 + (date.getTime() + timezoneOffset) / Mavo.Functions.days();
+					env.data = 25569 + (date.getTime() + timezoneOffset) / $f.days();
 				}
 			}
 		}
@@ -184,15 +184,15 @@
 
 							if (["DATE", "TIME", "DATE_TIME"].includes(type)) {
 								// Convert serial number to ms.
-								const timezoneOffset = Mavo.Functions.localTimezone * Mavo.Functions.minutes();
+								const timezoneOffset = $f.localTimezone * $f.minutes();
 
 								if (type === "TIME") {
-									value = Mavo.Functions.time(value * Mavo.Functions.days() - timezoneOffset, "seconds");
+									value = $f.time(value * $f.days() - timezoneOffset, "seconds");
 								}
 								else {
 									// See https://gist.github.com/christopherscott/2782634
-									value = (value - 25569) * Mavo.Functions.days();
-									value = type === "DATE" ? Mavo.Functions.date(value) : Mavo.Functions.datetime(value - timezoneOffset, "seconds");
+									value = (value - 25569) * $f.days();
+									value = type === "DATE" ? $f.date(value) : $f.datetime(value - timezoneOffset, "seconds");
 								}
 							}
 						}
@@ -233,7 +233,7 @@
 			// If needed, fix headings so we can use them as property names.
 			// To let them be used in expressions, we also must replace dashes with underscores.
 			if (this.transformHeadings) {
-				headings = headings.map(heading => Mavo.Functions.idify(heading).replace(/\-/g, "_"));
+				headings = headings.map(heading => $f.idify(heading).replace(/\-/g, "_"));
 			}
 
 			// Assign data to corresponding properties.
@@ -605,4 +605,4 @@
 		"mv-gsheets-no-sheet-to-store-data": "We couldn't find the {name} sheet in the spreadsheet and created it.",
 		"mv-gsheets-small-range": "The range you specified isn't large enough to store all your data."
 	});
-})(Bliss);
+})(Bliss, Mavo.Functions);
