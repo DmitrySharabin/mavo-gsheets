@@ -237,9 +237,11 @@
 				}
 			}
 
-			// If needed, fix headings so we can use them as property names.
-			// To let them be used in expressions, we also must replace dashes with underscores.
 			if (this.transformHeadings) {
+				this.rawHeadings = headings;
+
+				// Fix headings so we can use them as property names.
+				// To let them be used in expressions, we also must replace dashes with underscores.
 				headings = headings.map(heading => $f.idify(heading).replace(/\-/g, "_"));
 			}
 
@@ -311,6 +313,11 @@
 			if (!data[0].length) {
 				// No data to store, no need to proceed.
 				return true;
+			}
+
+			// We mustn't violate user-entered headings while saving data
+			if (this.transformHeadings && this.rawHeadings) {
+				data[0] = this.rawHeadings;
 			}
 
 			if (this.sheetAndRange === "") {
