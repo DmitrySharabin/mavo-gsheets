@@ -3,13 +3,33 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version %%VERSION%%
+ * @version 1.0.0
  */
 
-(($) => {
+(($, $f) => {
 	"use strict";
 
-	Mavo.Plugins.register("gsheets");
+	const UNIX_EPOCH_OFFSET = 25569;
+
+	Mavo.Plugins.register("gsheets", {
+		hooks: {
+			"node-getdata-end": function (env) {
+				if (this instanceof Mavo.Primitive && this.dateType) {
+					// Convert dates to serial numbers.
+
+					if (!env.data.includes("-")) {
+						// We have only time, so we need to add it to the current date.
+						env.data = `${new Date().toISOString().split("T")[0]}T${env.data}`
+					}
+
+					let timezoneOffset = env.data.includes("T") ? $f.localTimezone * $f.minutes() : 0;
+					const date = new Date(env.data);
+
+					env.data = UNIX_EPOCH_OFFSET + (date.getTime() + timezoneOffset) / $f.days();
+				}
+			}
+		}
+	});
 
 	const _ = Mavo.Backend.register(class GSheets extends Mavo.Backend {
 		id = "Google Sheets"
@@ -42,7 +62,6 @@
 			 * Supported backend-specific options:
 			 *
 			 * formattedValues — Determines whether values should be displayed according to the cell's formatting on the sheet (if true) or not (if false).
-			 * dateTimeAsNumber — If true, date, time, datetime, and duration fields will be output as doubles. Not strings in their given number format (which is dependent on the spreadsheet locale).
 			 * dataInColumns — If true, indicates that data is organized on the specified sheet in columns.
 			 * transformHeadings — If true, convert headings to something that looks like the ids so that they could be used as property names.
 			 */
@@ -92,11 +111,7 @@
 				return null;
 			}
 
-			const url = _.buildURL(this.apiURL, {
-				"majorDimension": this.dataInColumns ? "columns" : "rows",
-				"valueRenderOption": this.formattedValues ? "formatted_value" : "unformatted_value",
-				"dateTimeRenderOption": this.dateTimeAsNumber ? "serial_number" : "formatted_string"
-			});
+			const url = _.buildURL(this.spreadsheet, { key: this.apikey, ranges: [this.sheetAndRange], includeGridData: true });;
 
 			let response;
 			if (this.isAuthenticated()) {
@@ -141,7 +156,64 @@
 				return null;
 			}
 
-			const values = (await response.json()).values;
+			let rawValues = (await response.json()).sheets[0].data[0].rowData.map(r => r.values);
+			if (this.dataInColumns) {
+				// Transpose the array with data (https://stackoverflow.com/questions/17428587/transposing-a-2d-array-in-javascript)
+				rawValues = rawValues[0].map((_, colIndex) => rawValues.map(row => row[colIndex]));
+			}
+
+			const values = [];
+			rawValues.forEach(row => {
+				const ret = [];
+
+				row.forEach(cell => {
+					let value;
+
+					if (!cell.effectiveValue) {
+						// We have an empty cell that was touched (might be formatted) in the past, so, for now, we must ignore it.
+						return;
+					}
+
+					if (this.formattedValues) {
+						value = cell.formattedValue;
+					}
+					else {
+						value = cell.effectiveValue["stringValue"] ?? cell.effectiveValue["numberValue"] ?? cell.effectiveValue["boolValue"];
+
+						// Do we have date/time/date and time?
+						if (cell.effectiveFormat.numberFormat) {
+							const type = cell.effectiveFormat.numberFormat.type;
+
+							if (["DATE", "TIME", "DATE_TIME"].includes(type)) {
+								// Convert serial number to ms.
+								const timezoneOffset = $f.localTimezone * $f.minutes();
+								const date = $f.date((value - UNIX_EPOCH_OFFSET) * $f.days());
+								const time = $f.time((value - Math.trunc(value)) * $f.days() - timezoneOffset, "seconds");
+
+								switch (type) {
+									case "DATE":
+										value = date;
+										break;
+
+									case "TIME":
+										value = time;
+										break;
+
+									case "DATE_TIME":
+										value = `${date}T${time}`;
+										break;
+								}
+							}
+						}
+					}
+
+					ret.push(value);
+				});
+
+				if (ret.length) {
+					values.push(ret);
+				}
+			});
 
 			if (!values) {
 				// There is no data to work with
@@ -167,10 +239,12 @@
 				}
 			}
 
-			// If needed, fix headings so we can use them as property names.
-			// To let them be used in expressions, we also must replace dashes with underscores.
 			if (this.transformHeadings) {
-				headings = headings.map(heading => Mavo.Functions.idify(heading).replace(/\-/g, "_"));
+				this.rawHeadings = headings;
+
+				// Fix headings so we can use them as property names.
+				// To let them be used in expressions, we also must replace dashes with underscores.
+				headings = headings.map(heading => $f.idify(heading).replace(/\-/g, "_"));
 			}
 
 			// Assign data to corresponding properties.
@@ -214,7 +288,7 @@
 					// If there is data, transform it so that Google Sheets API could handle it.
 					let headings = Object.keys(this.mavo.root.children[collection].children[0].children ?? {});
 
-					if (headings.length) {
+					if (headings.length > 1) {
 						// We have a complex collection
 						data = data.map(d => Object.values(d));
 					}
@@ -241,6 +315,11 @@
 			if (!data[0].length) {
 				// No data to store, no need to proceed.
 				return true;
+			}
+
+			// We mustn't violate user-entered headings while saving data
+			if (this.transformHeadings && this.rawHeadings) {
+				data[0] = this.rawHeadings;
 			}
 
 			if (this.sheetAndRange === "") {
@@ -542,4 +621,4 @@
 		"mv-gsheets-no-sheet-to-store-data": "We couldn't find the {name} sheet in the spreadsheet and created it.",
 		"mv-gsheets-small-range": "The range you specified isn't large enough to store all your data."
 	});
-})(Bliss);
+})(Bliss, Mavo.Functions);
