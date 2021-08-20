@@ -9,6 +9,8 @@
 (($, $f) => {
 	"use strict";
 
+	const UNIX_EPOCH_OFFSET = 25569;
+
 	Mavo.Plugins.register("gsheets", {
 		hooks: {
 			"node-getdata-end": function (env) {
@@ -23,7 +25,7 @@
 					let timezoneOffset = env.data.includes("T") ? $f.localTimezone * $f.minutes() : 0;
 					const date = new Date(env.data);
 
-					env.data = 25569 + (date.getTime() + timezoneOffset) / $f.days();
+					env.data = UNIX_EPOCH_OFFSET + (date.getTime() + timezoneOffset) / $f.days();
 				}
 			}
 		}
@@ -185,7 +187,7 @@
 							if (["DATE", "TIME", "DATE_TIME"].includes(type)) {
 								// Convert serial number to ms.
 								const timezoneOffset = $f.localTimezone * $f.minutes();
-								const date = $f.date((value - 25569) * $f.days());
+								const date = $f.date((value - UNIX_EPOCH_OFFSET) * $f.days());
 								const time = $f.time((value - Math.trunc(value)) * $f.days() - timezoneOffset, "seconds");
 
 								switch (type) {
