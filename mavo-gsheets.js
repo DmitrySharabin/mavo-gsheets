@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version %%VERSION%%
+ * @version 1.0.0
  */
 
 (($, $f) => {
