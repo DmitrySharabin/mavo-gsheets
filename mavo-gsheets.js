@@ -165,10 +165,10 @@
 			const reversed = [...rawValues[0]].reverse();
 
 			// Range of indices of columns with data
-			const start = rawValues[0].findIndex(el => el.effectiveValue);
-			const end = reversed.length - reversed.findIndex(el => el.effectiveValue) - 1;
+			const start = rawValues[0].findIndex(el => el?.effectiveValue);
+			const end = reversed.length - reversed.findIndex(el => el?.effectiveValue) - 1;
 
-			if (start === -1 || end === -1) {
+			if (start === -1) {
 				// There is no data to work with
 				return null;
 			}
@@ -184,7 +184,7 @@
 					const cell = row[colIndex];
 					let value;
 
-					if (!cell || !cell.effectiveValue) {
+					if (!cell?.effectiveValue) {
 						// We have an empty cell
 						emptyCellsCount += 1;
 						ret.push(undefined);
