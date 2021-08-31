@@ -162,16 +162,15 @@
 				rawValues = rawValues[0].map((_, colIndex) => rawValues.map(row => row[colIndex]));
 			}
 
-			const reversed = [...rawValues[0]].reverse();
-
 			// Range of indices of columns with data
 			const start = rawValues[0].findIndex(el => el?.effectiveValue);
-			const end = reversed.length - reversed.findIndex(el => el?.effectiveValue) - 1;
-
 			if (start === -1) {
 				// There is no data to work with
 				return null;
 			}
+
+			const reversed = [...rawValues[0]].reverse();
+			const end = reversed.length - reversed.findIndex(el => el?.effectiveValue) - 1;
 
 			const values = [];
 			for (let rowIndex = 0; rowIndex < rawValues.length; rowIndex++) {
