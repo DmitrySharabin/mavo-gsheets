@@ -28,6 +28,7 @@
 
 	<section>
 		<h1>findSheet</h1>
+		<p>Click the first cell for this test to pass.</p>
 
 		<table class="reftest" data-test="testFindSheet" data-columns="2">
 			<tr mv-app="findsheet" mv-bar="none"
@@ -168,12 +169,11 @@
 	<section mv-app="basic" mv-bar="none"
 		mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing">
 		<h1>Basic</h1>
-
-		<table class="reftest">
+<table class="reftest">
 			<tr>
 				<td>
-					<ul>
-						<li mv-multiple>
+					<ul mv-list>
+						<li>
 							<span property="code">Code</span>
 							<span property="name">Name</span>
 						</li>
@@ -190,19 +190,17 @@
 		</table>
 	</section>
 
-	<section>
+	<section mv-app="dynamic" mv-bar="none"
+		mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
+		mv-source-sheet="Dynamic" mv-source-range="[if(flip, 'C9:D11' , 'A1:B4')]">
 		<h1>Dynamic</h1>
+		<p><input type="checkbox" property="flip"> Check me</p>
 
-		<table class="reftest" data-click="input[property=flip] wait .1s after mv-load">
+		<table class="reftest">
 			<tr>
-				<td mv-app="dynamic" mv-bar="none"
-					mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
-					mv-source-sheet="Dynamic" mv-source-range="[if(flip, 'C9:D11' , 'A1:B4')]">
-					<div class="test-content-ignore">
-						<input type="checkbox" property="flip"> Check me
-					</div>
-					<ul>
-						<li property="country" mv-multiple>
+				<td>
+					<ul mv-list="country">
+						<li>
 							<span property="code">Code</span>
 							<span property="name">Name</span>
 						</li>
@@ -226,8 +224,8 @@
 				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
 				mv-source-sheet="Options" mv-source-range="2:3" mv-source-options="dataInColumns">
 				<td>
-					<ul>
-						<li mv-multiple>
+					<ul mv-list>
+						<li>
 							<span property="code">Code</span>
 							<span property="name">Name</span>
 						</li>
@@ -245,8 +243,8 @@
 				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
 				mv-source-sheet="Options" mv-source-range="A6:B9" mv-source-options="transformHeadings">
 				<td>
-					<ul>
-						<li mv-multiple>
+					<ul mv-list>
+						<li>
 							<span property="code">Code</span>
 							<span property="country_name">Name</span>
 						</li>
@@ -265,8 +263,8 @@
 				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
 				mv-source-sheet="Options" mv-source-range="D6:D9" mv-source-options="formattedValues" class="ignore">
 				<td>
-					<ul>
-						<li mv-multiple="value">Value</li>
+					<ul mv-list="value">
+						<li>Value</li>
 					</ul>
 				</td>
 				<td>
@@ -310,7 +308,7 @@
 				</td>
 			</tr>
 
-			<tr title="Mixed collection" mv-app="mixedcollection" mv-bar="none"
+			<tr title="Mixed collection (v0.2.4-)" mv-app="mixedcollection" mv-bar="none" class="ignore"
 				mv-source="https://docs.google.com/spreadsheets/d/1zAXcvnIMemiJ51xVmhV7arpSLEQLJaM_dqtosFVbXGQ/edit?usp=sharing"
 				mv-source-sheet="Edge cases" mv-source-range="A6:A9">
 				<td>
@@ -333,8 +331,8 @@
 		<table class="reftest">
 			<tr>
 				<td>
-					<ul>
-						<li mv-multiple>
+					<ul mv-list>
+						<li>
 							<span property="taskTitle">Task</span>
 						</li>
 					</ul>
