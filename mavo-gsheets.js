@@ -184,7 +184,7 @@
 					const cell = row[colIndex];
 					let value;
 
-					if (!cell.effectiveValue) {
+					if (!cell || !cell.effectiveValue) {
 						// We have an empty cell
 						emptyCellsCount += 1;
 						ret.push(undefined);
