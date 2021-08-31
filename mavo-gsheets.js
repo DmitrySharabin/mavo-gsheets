@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 (($, $f) => {
@@ -162,16 +162,33 @@
 				rawValues = rawValues[0].map((_, colIndex) => rawValues.map(row => row[colIndex]));
 			}
 
+			const reversed = [...rawValues[0]].reverse();
+
+			// Range of indices of columns with data
+			const start = rawValues[0].findIndex(el => el.effectiveValue);
+			const end = reversed.length - reversed.findIndex(el => el.effectiveValue) - 1;
+
+			if (start === -1 || end === -1) {
+				// There is no data to work with
+				return null;
+			}
+
 			const values = [];
-			rawValues.forEach(row => {
+			for (let rowIndex = 0; rowIndex < rawValues.length; rowIndex++) {
+				const row = rawValues[rowIndex];
+				let emptyCellsCount = 0;
+
 				const ret = [];
 
-				row.forEach(cell => {
+				for (let colIndex = start; colIndex <= end; colIndex++) {
+					const cell = row[colIndex];
 					let value;
 
 					if (!cell.effectiveValue) {
-						// We have an empty cell that was touched (might be formatted) in the past, so, for now, we must ignore it.
-						return;
+						// We have an empty cell
+						emptyCellsCount += 1;
+						ret.push(undefined);
+						continue;
 					}
 
 					if (this.formattedValues) {
@@ -208,16 +225,14 @@
 					}
 
 					ret.push(value);
-				});
-
-				if (ret.length) {
-					values.push(ret);
 				}
-			});
 
-			if (!values) {
-				// There is no data to work with
-				return null;
+				if (emptyCellsCount === end - start + 1) {
+					// Skip rows of empty cells
+					continue;
+				}
+
+				values.push(ret);
 			}
 
 			// We need to store the loaded data so that we can perform diff later.
@@ -228,7 +243,7 @@
 			let [headings, ...data] = values;
 			this.recordCount = data.length;
 
-			if (headings.some(h => !h.trim?.()?.length)) {
+			if (headings.some(h => !h || !h.trim?.()?.length)) {
 				// Not all data has headings. Warn an author.
 				Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headings"));
 
