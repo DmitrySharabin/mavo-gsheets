@@ -175,6 +175,10 @@
 			const values = [];
 			for (let rowIndex = 0; rowIndex < rawValues.length; rowIndex++) {
 				const row = rawValues[rowIndex];
+				if (!row) {
+					break;
+				}
+
 				let emptyCellsCount = 0;
 
 				const ret = [];
