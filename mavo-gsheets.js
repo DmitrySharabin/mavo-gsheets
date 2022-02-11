@@ -168,36 +168,75 @@
 			let startRow = 0;
 			let startColumn;
 			for (const row of rawValues) {
-				startColumn = row.findIndex(cell => cell?.effectiveValue);
+				startColumn = row?.findIndex(cell => cell?.effectiveValue);
 
-				if (startColumn !== -1) {
+				if (startColumn !== undefined && startColumn !== -1) {
 					break;
 				}
 
 				startRow += 1;
 			}
 
-			if (startRow >= rawValues.length || startColumn === -1) {
+			if (startRow >= rawValues.length || startColumn === undefined || startColumn === -1) {
 				// No data to work with
 				return null
 			}
 
-			// Search for the end of the first range of data.
-			let endRow;
-			for (let row = startRow; row < rawValues.length; row++) {
-				if (!rawValues[row]?.[startColumn] || !rawValues[row]?.[startColumn]?.effectiveValue) {
-					endRow = row - 1;
-					break;
-				}
-			}
-			endRow = endRow ?? rawValues.length - 1;
-
-			let endColumn = rawValues[startRow].findIndex((cell, index) => index > startColumn && !cell?.effectiveValue);
-			endColumn = endColumn === -1 ? rawValues[startRow].length - 1 : endColumn - 1;
-
 			// Save data offset inside raw values to be able to store data back in the same range as the source data.
 			this.rowOffset = startRow;
 			this.columnOffset = startColumn;
+
+			// Search for the end of the first range of data.
+			let endColumn, endRow;
+			if (this.dataInColumns) {
+				// Search for the first row with an empty cell at startColumn column.
+				// Why? Because the first column with data contains headings (future property names).
+				// And we can't build property names out of empty strings.
+				for (let row = startRow; row < rawValues.length; row++) {
+					if (!rawValues[row]?.[startColumn]?.effectiveValue) {
+						endRow = row - 1;
+						break;
+					}
+				}
+				endRow = endRow ?? rawValues.length - 1;
+
+				// Search for the first fully empty column.
+				let column = startColumn + 1;
+				let isEmpty;
+				while (true) {
+					isEmpty = true;
+					for (let row = startRow; row <= endRow; row++) {
+						if (rawValues[row]?.[column]?.effectiveValue) {
+							column += 1;
+							isEmpty = false;
+							break;
+						}
+					}
+
+					if (isEmpty) {
+						endColumn = column - 1;
+						break;
+					}
+				}
+			} else {
+				// Search for the first empty cell at startRow row.
+				// Why? Because the first row with data contains headings (future property names).
+				// And we can't build property names out of empty strings.
+				endColumn = rawValues[startRow].findIndex((cell, index) => index > startColumn && !cell?.effectiveValue);
+				endColumn = endColumn === -1 ? rawValues[startRow].length - 1 : endColumn - 1;
+
+				// Search for the first fully empty row.
+				for (let row = startRow; row < rawValues.length; row++) {
+					const r = rawValues[row];
+					const isEmpty = r?.every((cell, index) => index <= endColumn && !cell?.effectiveValue);
+
+					if (!r || isEmpty) {
+						endRow = row - 1;
+						break;
+					}
+				}
+				endRow = endRow ?? rawValues.length - 1;
+			}
 
 			let values = [];
 			for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
