@@ -27,7 +27,7 @@ The plugin supports *private spreadsheets* as well. However, to read data from a
 | Value         | Description                                                                                             |
 |---------------|---------------------------------------------------------------------------------------------------------|
 | `sheet`       | (*Optional*) A sheet title to read/write data from/to. If not provided, the first visible sheet will be used. <br /> **Note:** If there is no sheet with the specified name in the spreadsheet, it will be created while saving data.  |
-| `range`       | (*Optional*) A range with data in *A1 notation*. If not specified, supposed all the cells in the sheet. |
+| `range`       | (*Optional*) A range with data in *A1 notation*. If not specified, the plugin will try to find the first not empty range of cells with data. |
 | `spreadsheet` | (*Optional*) A spreadsheet id. The value between the `/d/` and the `/edit` in the URL of a spreadsheet. By specifying this value, you can redefine the spreadsheet id the plugin got from the provided spreadsheet URL. In other words, you'll be able to work with another spreadsheet. |
 
 **Note:** We recommend providing either *sheet title* or *range* to avoid extra network requests.
@@ -41,8 +41,6 @@ This is a string like `A1:B2` that refers to a group of cells in the sheet (the 
 - `1:2` refers to all the cells in the first two rows of the sheet.
 - `A5:A` refers to all the cells of the first column of the sheet, from row 5 onward.
 - `C2:2` refers to all the cells of the second row of the sheet, from column C onward.
-
-If not specified, supposed all the cells in the sheet.
 
 Named ranges are also supported.
 

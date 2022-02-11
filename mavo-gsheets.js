@@ -164,39 +164,52 @@
 				return null;
 			}
 
-			if (this.dataInColumns) {
-				// Transpose the array with data (https://stackoverflow.com/questions/17428587/transposing-a-2d-array-in-javascript)
-				rawValues = rawValues[0].map((_, colIndex) => rawValues.map(row => row[colIndex]));
-			}
+			// Search for the beginning of data.
+			let startRow = 0;
+			let startColumn;
+			for (const row of rawValues) {
+				startColumn = row.findIndex(cell => cell?.effectiveValue);
 
-			// Range of indices of columns with data
-			const start = rawValues[0].findIndex(el => el?.effectiveValue);
-			if (start === -1) {
-				// There is no data to work with
-				return null;
-			}
-
-			const reversed = [...rawValues[0]].reverse();
-			const end = reversed.length - reversed.findIndex(el => el?.effectiveValue) - 1;
-
-			const values = [];
-			for (let rowIndex = 0; rowIndex < rawValues.length; rowIndex++) {
-				const row = rawValues[rowIndex];
-				if (!row) {
+				if (startColumn !== -1) {
 					break;
 				}
 
-				let emptyCellsCount = 0;
+				startRow += 1;
+			}
 
+			if (startRow >= rawValues.length || startColumn === -1) {
+				// No data to work with
+				return null
+			}
+
+			// Search for the end of the first range of data.
+			let endRow;
+			for (let row = startRow; row < rawValues.length; row++) {
+				if (!rawValues[row]?.[startColumn] || !rawValues[row]?.[startColumn]?.effectiveValue) {
+					endRow = row - 1;
+					break;
+				}
+			}
+			endRow = endRow ?? rawValues.length - 1;
+
+			let endColumn = rawValues[startRow].findIndex((cell, index) => index > startColumn && !cell?.effectiveValue);
+			endColumn = endColumn === -1 ? rawValues[startRow].length - 1 : endColumn - 1;
+
+			// Save data offset inside raw values to be able to store data back in the same range as the source data.
+			this.rowOffset = startRow;
+			this.columnOffset = startColumn;
+
+			let values = [];
+			for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
+				const row = rawValues[rowIndex];
 				const ret = [];
 
-				for (let colIndex = start; colIndex <= end; colIndex++) {
-					const cell = row[colIndex];
+				for (let columnIndex = startColumn; columnIndex <= endColumn; columnIndex++) {
+					const cell = row[columnIndex];
 					let value;
 
 					if (!cell?.effectiveValue) {
 						// We have an empty cell
-						emptyCellsCount += 1;
 						ret.push(undefined);
 						continue;
 					}
@@ -237,12 +250,12 @@
 					ret.push(value);
 				}
 
-				if (emptyCellsCount === end - start + 1) {
-					// Skip rows of empty cells
-					continue;
-				}
-
 				values.push(ret);
+			}
+
+			if (this.dataInColumns) {
+				// Transpose the array with data (https://stackoverflow.com/questions/17428587/transposing-a-2d-array-in-javascript)
+				values = values[0].map((_, columnIndex) => values.map(row => row[columnIndex]));
 			}
 
 			// We need to store the loaded data so that we can perform diff later.
@@ -383,6 +396,18 @@
 				data = data.concat(records);
 			}
 
+			// Add “empty” rows and columns to data so we could store them in the same range we got the source data from.
+			const emptyRecord = this.columnOffset > 0 ? Array(this.columnOffset + data[0].length).fill(undefined) : []; // [undefined, ..., undefined]
+			const emptyRecords = this.rowOffset > 0 ? Array(this.rowOffset).fill(emptyRecord) : []; // [ [undefined, ..., undefined], [undefined, ..., undefined], ..., [undefined, ..., undefined] ]
+
+			if (this.columnOffset > 0) {
+				// Prepend every row with “empty” columns.
+				data = data.map(row => [...Array(this.columnOffset).fill(undefined), ...row]); // [undefined, ..., undefined, data, data, ..., data]
+			}
+
+			// Prepend data with “empty” rows.
+			data = [...emptyRecords, ...data]; // [ [undefined, ..., undefined, undefined, undefined, ..., undefined], ..., [undefined, ..., undefined, undefined, undefined, ..., undefined], [undefined, ..., undefined, data, data, ..., data], ..., [undefined, ..., undefined, data, data, ..., data] ]
+
 			// Write the new data.
 			const url = _.buildURL(this.apiURL, {
 				"valueInputOption": "user_entered",
@@ -481,7 +506,7 @@
 			};
 
 			// Saved successfully, update the fields.
-			this.loadedData = res.updatedData.values;
+			this.loadedData = res.updatedData?.values;
 			this.recordCount = recordCount;
 
 			return res;
