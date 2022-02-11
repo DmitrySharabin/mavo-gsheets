@@ -156,7 +156,14 @@
 				return null;
 			}
 
-			let rawValues = (await response.json()).sheets[0].data[0].rowData.map(r => r.values);
+			let rawValues = (await response.json()).sheets[0].data[0].rowData?.map(r => r.values);
+
+			if (!rawValues) {
+				// No data to work with. It might be the spreadsheet is empty.
+				// No need to proceed.
+				return null;
+			}
+
 			if (this.dataInColumns) {
 				// Transpose the array with data (https://stackoverflow.com/questions/17428587/transposing-a-2d-array-in-javascript)
 				rawValues = rawValues[0].map((_, colIndex) => rawValues.map(row => row[colIndex]));
