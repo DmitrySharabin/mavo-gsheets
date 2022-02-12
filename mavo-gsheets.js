@@ -458,15 +458,23 @@
 				"majorDimension": this.dataInColumns ? "columns" : "rows",
 				"values": data
 			};
+			const headers = {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${this.accessToken}`
+			};
 
-			let res;
-			try {
-				res = await this.request(url, body, "PUT");
-			} catch (e) {
-				switch (e.status) {
+			let response = await fetch(url.href, {
+				method: "PUT",
+				headers,
+				body: JSON.stringify(body)
+			});
+
+			if (!response.ok) {
+				switch (response.status) {
 					case 401:
 						// Unauthorized
 						this.mavo.error(this.mavo._("mv-gsheets-login-to-proceed"));
+						await this.logout();
 						return true;
 					case 403:
 						// No write permissions
@@ -476,12 +484,10 @@
 						// No spreadsheet
 						this.mavo.error(this.mavo._("mv-gsheets-spreadsheet-not-found"));
 						return true;
-					default:
-						res = e;
 				}
 			}
 
-			if (res.response && res.status !== 200) { // res.status == 400
+			if (response.status === 400) {
 				if (this.sheet) {
 					// It might be there is no sheet with the specified name.
 					// Let's check it.
@@ -503,41 +509,57 @@
 						};
 
 						try {
-							await this.request(_.buildURL(`${this.spreadsheet}:batchUpdate`), req, "POST");
+							response = await fetch(_.buildURL(`${this.spreadsheet}:batchUpdate`).href, {
+								method: "POST",
+								headers,
+								body: JSON.stringify(req)
+							});
+
+							if (!response.ok) {
+								throw response;
+							}
 
 							// Warn a user about the newly created sheet.
 							Mavo.warn(this.mavo._("mv-gsheets-no-sheet-to-store-data", { name: this.sheet }));
 
 							// Try to store data one more time.
-							res = await this.request(url, body, "PUT");
-						} catch (e) {
-							res = e;
-						}
+							response = await fetch(url.href, {
+								method: "PUT",
+								headers,
+								body: JSON.stringify(body)
+							});
+
+							if (!response.ok) {
+								throw response;
+							}
+						} catch {}
 					}
 				}
 
 				// Something went wrong?
-				if (res.response && res.status !== 200) {
-					if (res.response.error.message.startsWith("Unable to parse range")) {
+				if (response.status !== 200) {
+					const error = (await response.json()).error.message;
+
+					if (error.startsWith("Unable to parse range")) {
 						// Invalid range
 						this.mavo.error(this.mavo._("mv-gsheets-invalid-range"));
 					}
-					else if (res.response.error.message.startsWith("Requested writing within range")) {
+					else if (error.startsWith("Requested writing within range")) {
 						// The range is too small
 						this.mavo.error(this.mavo._("mv-gsheets-small-range"));
 					}
-					else if (res.response.error.message.includes("protected cell or object")) {
+					else if (error.includes("protected cell or object")) {
 						// The sheet and/or range is protected
-						this.mavo.error(res.response.error.message);
+						this.mavo.error(error);
 					}
-					else if (res.response.error.message.startsWith("Invalid values")) {
+					else if (error.startsWith("Invalid values")) {
 						// An app's data structure is not supported
 						this.mavo.error(this.mavo._("mv-gsheets-unsupported-data-structure"));
-						Mavo.warn(res.response.error.message);
+						Mavo.warn(error);
 					}
 					else {
 						// Unknown error
-						Mavo.warn(res.response.error.message);
+						Mavo.warn(error);
 					}
 
 					return true;
@@ -545,10 +567,10 @@
 			};
 
 			// Saved successfully, update the fields.
-			this.loadedData = res.updatedData?.values;
+			this.loadedData = response.updatedData?.values;
 			this.recordCount = recordCount;
 
-			return res;
+			return response;
 		}
 
 		async login (passive) {
