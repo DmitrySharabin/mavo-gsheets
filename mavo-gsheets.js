@@ -528,10 +528,6 @@
 								headers,
 								body: JSON.stringify(body)
 							});
-
-							if (!response.ok) {
-								throw response;
-							}
 						} catch {}
 					}
 				}
