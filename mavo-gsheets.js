@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version 1.0.4
+ * @version 1.0.5
  */
 
 (($, $f) => {
@@ -228,7 +228,14 @@
 				// Search for the first fully empty row.
 				for (let row = startRow; row < rawValues.length; row++) {
 					const r = rawValues[row];
-					const isEmpty = r?.every((cell, index) => index <= endColumn && !cell?.effectiveValue);
+
+					let isEmpty = true;
+					for (let column = startColumn; column <= endColumn; column++) {
+						if (r?.[column]?.effectiveValue) {
+							isEmpty = false;
+							break;
+						}
+					}
 
 					if (!r || isEmpty) {
 						endRow = row - 1;
