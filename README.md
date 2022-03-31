@@ -1,7 +1,5 @@
 # Google Sheets Backend
 
-**Warning:** The plugin is in development—something still might change. We are planning to make it more powerful shortly, so stay in touch and tell us what you think.
-
 **Note:** Below, everything that applied to `mv-storage` could be applied to `mv-source` and `mv-init` as well.
 
 ## Restrictions
