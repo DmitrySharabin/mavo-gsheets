@@ -44,7 +44,7 @@ Named ranges are also supported.
 
 ## Customization
 
-The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-storage-options` attribute. To separating the options, you can use either commas or semicolons.
+The plugin supports a number of options for customizing the way it reads/writes data from/to a spreadsheet. You can specify these options by using the `mv-storage-options` attribute. To separate the options, you can use either commas or semicolons.
 
 ### Supported options
 
