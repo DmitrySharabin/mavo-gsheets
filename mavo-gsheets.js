@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version 1.0.5
+ * @version 1.0.6
  */
 
 (($, $f) => {
@@ -189,16 +189,7 @@
 			// Search for the end of the first range of data.
 			let endColumn, endRow;
 			if (this.dataInColumns) {
-				// Search for the first row with an empty cell at startColumn column.
-				// Why? Because the first column with data contains headings (future property names).
-				// And we can't build property names out of empty strings.
-				for (let row = startRow; row < rawValues.length; row++) {
-					if (!rawValues[row]?.[startColumn]?.effectiveValue) {
-						endRow = row - 1;
-						break;
-					}
-				}
-				endRow = endRow ?? rawValues.length - 1;
+				endRow = rawValues.length - 1;
 
 				// Search for the first fully empty column.
 				let column = startColumn + 1;
@@ -219,11 +210,7 @@
 					}
 				}
 			} else {
-				// Search for the first empty cell at startRow row.
-				// Why? Because the first row with data contains headings (future property names).
-				// And we can't build property names out of empty strings.
-				endColumn = rawValues[startRow].findIndex((cell, index) => index > startColumn && !cell?.effectiveValue);
-				endColumn = endColumn === -1 ? rawValues[startRow].length - 1 : endColumn - 1;
+				endColumn = rawValues[startRow].length - 1;
 
 				// Search for the first fully empty row.
 				for (let row = startRow; row < rawValues.length; row++) {
@@ -312,23 +299,23 @@
 			let [headings, ...data] = values;
 			this.recordCount = data.length;
 
-			if (headings.some(h => !h || !h.trim?.()?.length)) {
-				// Not all data has headings. Warn an author.
-				Mavo.warn(this.mavo._("mv-gsheets-empty-cells-in-headings"));
-
-				// What if there are more than one data set and an author didn't provide a data range?
-				// Let them know about that.
-				if (!this.range) {
-					Mavo.warn(this.mavo._("mv-gsheets-range-not-provided"));
-				}
-			}
-
 			if (this.transformHeadings) {
 				this.rawHeadings = headings;
 
 				// Fix headings so we can use them as property names.
 				// To let them be used in expressions, we also must replace dashes with underscores.
 				headings = headings.map(heading => $f.idify(heading).replace(/\-/g, "_"));
+			}
+
+			const hasBadHeadings = headings.some(h => { h = !h? "" : h + ""; return /^\d/.test(h) || !/\w+/.test(h); });
+			if (hasBadHeadings) {
+				Mavo.warn(this.mavo._("mv-gsheets-bad-headings", { headings: headings.join(", ") }));
+
+				// What if there are more than one data set and an author didn't provide a data range?
+				// Let them know about that.
+				if (!this.range) {
+					Mavo.warn(this.mavo._("mv-gsheets-range-not-provided"));
+				}
 			}
 
 			// Assign data to corresponding properties.
@@ -695,8 +682,8 @@
 		 */
 		static zipObject (props, values) {
 			return props.reduce((prev, prop, i) => {
-				// Skip empty property names (and corresponding data) since they are useless.
-				if (!prop.trim?.()?.length) {
+				// Drop { undefined: undefined }
+				if (prop === undefined && values[i] === undefined) {
 					return prev;
 				}
 
@@ -724,15 +711,15 @@
 
 	Mavo.Locale.register("en", {
 		"mv-gsheets-range-not-provided": "If there is more than one table with data on a sheet, you should provide a range with the needed data. For more information, see the plugin docs.",
-		"mv-gsheets-empty-cells-in-headings": "It looks like not all your data has headings. Please, make sure that the row/column with headings hasn't got empty cells.",
+		"mv-gsheets-bad-headings": "It looks like not all your headings can be used as property names. Please, make sure that all cells in the heading row/column are not empty and follow the property name rules (https://mavo.io/docs/properties#property-name-rules). In some cases, specifying the more narrow cell range and/or the transformHeadings option might help. The headings are: {headings}.",
 		"mv-gsheets-login-to-proceed": "You must be logged in to save data to the spreadsheet. Re-login and try again.",
 		"mv-gsheets-write-permission-denied": "You don't have permission to save data to the spreadsheet.",
 		"mv-gsheets-read-permission-denied": "You don't have permission to read data from the spreadsheet.",
-		"mv-gsheets-unsupported-data-structure": "It looks like your app's data has a structure that is not supported by the GSheets plugin.",
+		"mv-gsheets-unsupported-data-structure": "It looks like your app's data has a structure that is not supported by the Google Sheets plugin.",
 		"mv-gsheets-spreadsheet-not-found": "We couldn't find the spreadsheet you specified.",
 		"mv-gsheets-no-sheet-or-invalid-range": "There is no sheet with the specified name in the spreadsheet, and/or the format you used to specify the data range is invalid.",
 		"mv-gsheets-invalid-range": "The format you used to specify the data range for storing your data is invalid.",
-		"mv-gsheets-no-sheet-to-store-data": "We couldn't find the {name} sheet in the spreadsheet and created it.",
+		"mv-gsheets-no-sheet-to-store-data": "We couldn't find the ”{name}“ sheet in the spreadsheet and created it.",
 		"mv-gsheets-small-range": "The range you specified isn't large enough to store all your data."
 	});
 })(Bliss, Mavo.Functions);
