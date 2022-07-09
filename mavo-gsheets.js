@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version 1.0.6
+ * @version 1.0.7
  */
 
 (($, $f) => {
@@ -557,10 +557,10 @@
 			};
 
 			// Saved successfully, update the fields.
-			this.loadedData = response.updatedData?.values;
+			this.loadedData = (await response.json()).updatedData?.values;
 			this.recordCount = recordCount;
 
-			return response;
+			return this.loadedData;
 		}
 
 		async login (passive) {
