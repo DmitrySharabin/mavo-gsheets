@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version 1.0.8
+ * @version 1.0.9
  */
 
 (($, $f) => {
@@ -368,7 +368,7 @@
 
 					if (headings.length > 1) {
 						// We have a complex collection
-						data = data.map(d => Object.values(d));
+						data = data.map(d => headings.map(heading => d[heading]));
 					}
 					else {
 						// We have a simple collection
