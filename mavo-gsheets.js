@@ -21,8 +21,9 @@
 					}
 
 					if (!env.data.includes("-")) {
-						// We have only time, so we need to add it to the current date.
-						env.data = `${new Date().toISOString().split("T")[0]}T${env.data}`
+						// We have only time, so we need to add it to the first supported by Google Sheets date.
+						// See https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption
+						env.data = `1899-12-30T${env.data}`;
 					}
 
 					let timezoneOffset = env.data.includes("T") ? $f.localTimezone * $f.minutes() : 0;
