@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version 1.0.7
+ * @version 1.0.8
  */
 
 (($, $f) => {
@@ -17,12 +17,12 @@
 				if (this instanceof Mavo.Primitive && this.dateType) {
 					// Convert dates to serial numbers.
 
-					if (!env.data.includes("-")) {
+					if (!env.data?.includes("-")) {
 						// We have only time, so we need to add it to the current date.
 						env.data = `${new Date().toISOString().split("T")[0]}T${env.data}`
 					}
 
-					let timezoneOffset = env.data.includes("T") ? $f.localTimezone * $f.minutes() : 0;
+					let timezoneOffset = env.data?.includes("T") ? $f.localTimezone * $f.minutes() : 0;
 					const date = new Date(env.data);
 
 					env.data = UNIX_EPOCH_OFFSET + (date.getTime() + timezoneOffset) / $f.days();
