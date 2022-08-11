@@ -16,16 +16,23 @@
 			"node-getdata-end": function (env) {
 				if (this instanceof Mavo.Primitive && this.dateType) {
 					// Convert dates to serial numbers.
+					if (env.data === undefined || env.data === null) {
+						return;
+					}
 
-					if (!env.data?.includes("-")) {
+					if (!env.data.includes("-")) {
 						// We have only time, so we need to add it to the current date.
 						env.data = `${new Date().toISOString().split("T")[0]}T${env.data}`
 					}
 
-					let timezoneOffset = env.data?.includes("T") ? $f.localTimezone * $f.minutes() : 0;
+					let timezoneOffset = env.data.includes("T") ? $f.localTimezone * $f.minutes() : 0;
 					const date = new Date(env.data);
 
 					env.data = UNIX_EPOCH_OFFSET + (date.getTime() + timezoneOffset) / $f.days();
+
+					if (isNaN(env.data)) {
+						env.data = undefined;
+					}
 				}
 			}
 		}
