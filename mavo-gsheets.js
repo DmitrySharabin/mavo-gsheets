@@ -1,4 +1,4 @@
-// @ts-check
+/* globals Mavo, Bliss */
 
 /**
  * Google Sheets backend plugin for Mavo
@@ -314,11 +314,11 @@ const _ = Mavo.Backend.register(class GSheets extends Mavo.Backend {
 
 			// Fix headings so we can use them as property names.
 			// To let them be used in expressions, we also must replace dashes with underscores.
-			headings = headings.map(heading => $f.idify(heading).replace(/\-/g, "_"));
+			headings = headings.map(heading => $f.idify(heading).replace(/-/g, "_"));
 		}
 
 		const hasBadHeadings = headings.some(h => {
-			h = !h? "" : h + ""; return /^\d/.test(h) || !/\w+/.test(h); 
+			h = !h? "" : h + ""; return /^\d/.test(h) || !/\w+/.test(h);
 		});
 		if (hasBadHeadings) {
 			Mavo.warn(this.mavo._("mv-gsheets-bad-headings", { headings: headings.join(", ") }));
