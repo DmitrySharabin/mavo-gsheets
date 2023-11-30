@@ -3,7 +3,7 @@
 /**
  * Google Sheets backend plugin for Mavo
  * @author Dmitry Sharabin and contributors
- * @version 1.0.9
+ * @version 1.0.10
  */
 
 (($, $f) => {
@@ -665,7 +665,7 @@ const _ = Mavo.Backend.register(class GSheets extends Mavo.Backend {
 		this.sheet = this.sheet ?? visibleSheet?.properties?.title;
 	}
 
-	oAuthParams = () => `&redirect_uri=${encodeURIComponent("https://auth.mavo.io")}&response_type=code&scope=${encodeURIComponent(_.scopes.join(" "))}`;
+	oAuthParams = () => `&response_type=code&redirect_uri=${encodeURIComponent("https://auth.mavo.io")}&scope=${encodeURIComponent(_.scopes.join(" "))}`;
 
 	static apiDomain = "https://sheets.googleapis.com/v4/spreadsheets/";
 	static oAuth = "https://accounts.google.com/o/oauth2/auth";
